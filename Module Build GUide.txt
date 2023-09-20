@@ -10,7 +10,9 @@
 |   |   |-- ai_model_training.yaml        # AI Model Training
 |   |   |-- customer_usage_audit.yaml     # User Activity and Usage Monitoring
 |   |   |-- rollback.yaml                 # Rollback Workflows for Failed Deployments
-|   |
+|   | 
+|   | GitHub SETUP IN WORKFLOWS & ACTIONS
+|   | 
 |   |*- ACTIONS/                         # Custom GitHub Actions
 |   |   |-- auto_versioning.py           # Auto-versioning
 |   |   |-- auto_docs_generation.py      # Auto-docs Generation
@@ -24,7 +26,8 @@
 |   |   |-- security_audit.py            # Security Auditing
 |   |   |-- performance_audit.go         # Go-based performance auditing
 
-    
+
+#################### MODULE #################### 
 |** BACKEND/                             # Backend Services & Microservices
 |   |   |
 |   |   |*- Rest/                        # RESTful APIs
@@ -113,7 +116,8 @@
 |   |   |*- Integration/                 # Integration tests
 |   |   |*- E2e/                         # End-to-end tests
 
-           
+
+#################### MODULE ####################            
 |   |** MICROSERVICES/                    # Microservices architecture
 |   |   |*- Bot_logic_service/            # Service for bot logic
 |   |   |   |-- models/                  # Data models      
@@ -144,7 +148,8 @@
 |   |   |-- performance/                 # Performance tests
 |   |   |-- security/                     # Security tests
 
-    
+
+#################### MODULE #################### 
 |   |** FRONTEND/                        # Frontend SPA and PWA
 |   |   |*- React_app/                   # React-based SPA
 |   |   |   |-- src/                     # Source files
@@ -170,7 +175,8 @@
 |   |   |*- Android/                     # Mobile App
 |   |   |*- Ios/                         # Mobile App
 
-    
+
+#################### MODULE #################### 
 |** BLOCKCHAIN/                          # Blockchain for Secure Payments
 |   |*- Smart_contracts/                 # Smart contracts for blockchain
 |   |   |-- PurchaseContract.sol         # Ethereum smart contract for purchases
@@ -185,7 +191,8 @@
 |   |   |-- deploy_contract.js           # Deploy smart contract
 |   |   |-- validate_contract.py         # Python for contract validation
 
-    
+
+#################### MODULE #################### 
 |** AI_ML/                               # Machine Learning Models
 |   |*- Predictive_models/               # Predictive analytics
 |   |   |-- price_prediction.py          # Predict future prices
@@ -202,7 +209,8 @@
 |   |   |-- collaborative_filtering.py    # Model based on user behavior
 |   |   |-- content_based_filtering.py   # Additional filtering method
 
-  
+
+#################### MODULE ####################  
 |** IOT/                                 # IoT integration for real-time notifications
 |   |*- Mqtt/                            # MQTT protocols for IoT
 |   |   |-- mqtt_listener.py             # Listen to IoT events
@@ -211,7 +219,8 @@
 |   |*- Edge_computing/                  # Edge computing scripts
 |   |   |-- data_processing_edge.py       # Processes data on edge devices
 
-   
+
+#################### MODULE #################### 
 |** AR_VR/                               # Augmented Reality features
 |   |*- Dashboard/                       # AR-based analytics dashboard
 |   |   |-- ar_dashboard.js              # JavaScript for AR dashboard
@@ -223,7 +232,8 @@
 |   |*- VR_marketplace/                  # VR-based product marketplace
 |   |   |-- vr_marketplace.rs             # Rust-based VR marketplace
 
- 
+
+#################### MODULE #################### 
 |** DATABASE/                            # Database and Cache
 |   |*- Migrations/                      # Database migrations
 |   |   |-- up.sql                       # Migrations up
@@ -241,7 +251,8 @@
 |   |   |-- seed.sql                     # SQL file with seed data
 |   |   |-- seed_mongo.js                # MongoDB seed script
 
- 
+
+#################### MODULE ####################  
 |** INTERNATIONALIZATION/                 # Multi-language support
 |   |*- Locales/                          # Localization files
 |   |   |-- en_US.yaml                    # English language file
@@ -254,7 +265,8 @@
 |   |*- Auto_translation/                # Auto-translation module
 |   |   |-- translator.py                 # Python script for translation
 
-      
+
+#################### MODULE #################### 
 |** DEVOPS/                              # DevOps & CI/CD Scripts
 |   |*- Dockerfile/                      # Docker configuration
 |   |   |-- docker-compose.yml           # Docker compose file
@@ -270,27 +282,32 @@
 |   |   |-- deployment.yaml               # YAML for Kubernetes deployments
 |   |   |-- service.yaml                  # YAML for Kubernetes services
 
- 
+
+#################### MODULE #################### 
 |** SCRIPTS/                             # Custom Scripts
 |   |-- Cron_jobs/                       # Scheduled Jobs
 |       |-- daily_report.sh              # Daily Report Generation
 |       |-- weekly_backup.ps1            # Weekly Backup
 
-     
+
+#################### MODULE #################### 
 |** COMPLIANCE/                          # Compliance & Governance
 |   |*- Gdpr/                             # GDPR compliance scripts and documentation
 |   |*- Pci/                              # PCI compliance scripts and documentation
 
-    
+
+#################### MODULE ####################     
 |** TERRAFORM/                           # Infrastructure as Code
 |   |*- Main.tf                           # Main Terraform configuration file
 |   |   |-- variables.tf                  # Variable declarations for Terraform
 
-          
+
+#################### MODULE ####################           
 |** ANSIBLE/                              # Configuration management
 |   |*- Main.yaml                         # Main Ansible playbook
 
-            
+
+#################### MODULE ####################           
 |** DOCS/                                # Documentation and SDKs
 |   |*- Architecture_diagrams/           # Architecture Diagrams
 |   |
@@ -309,19 +326,22 @@
 |   |   |-- js_sdk.js                    # JavaScript SDK
 |   |   |-- go_sdk.go                    # Go SDK for high-performance needs
 
- 
+
+#################### MODULE #################### 
 |** VENDOR/                              # Third-party Libraries
 |   |*- .Gitignore/                      # Git Ignore File
 |   |*- README.md/                       # README File
 |   |*- LICENSE/                         # License File
 
-    
+
+#################### MODULE ####################     
 |** TESTS/                               # Tests
 |   |*- Unit_tests/                      # Unit Tests
 |   |*- Integration_tests/               # Integration Tests
 |   |*- E2e_tests/                       # End-to-End Tests
 
-            
+
+#################### MODULE ####################             
 |** LOGS/                                # Log Files
 |   |*- Api_logs/                        # API Logs
 |   |*- Service_logs/                    # Service Logs
