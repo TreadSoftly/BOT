@@ -1,8 +1,15 @@
 ## THIS IS CURRENTLY LESS UP TO DATE THAN THE MODULE MAPPING ##
 
 
+                     # ================== #
+                            IMPORTS
+                     # ================== #
 # ==============================================================================
-# Web Frameworks: Flask and Extensions
+# SECTION: Web Frameworks - Flask and Extensions
+# ------------------------------------------------------------------------------
+# - This section imports modules and libraries necessary for the core functionality
+#   of the Flask application, session management, rate-limiting, Cross-Origin 
+#   Resource Sharing, email sending, and JSON Web Token management.
 # ==============================================================================
 from flask import Flask                             # Core Flask application functionality
 from flask import jsonify                           # JSON formatting for responses
@@ -24,7 +31,10 @@ from flask_jwt_extended import jwt_required         # Decorator for JWT-required
 from flask_jwt_extended import create_access_token  # Function to create new access tokens
 
 # ==============================================================================
-# Data Storage, Databases, and Caching
+# SECTION: Data Storage, Databases, and Caching
+# ------------------------------------------------------------------------------
+# - This section imports modules and libraries required for data storage, 
+#   database operations, and caching.
 # ==============================================================================
 from redis import Redis                             # Key-value data store
 from pymongo import MongoClient                     # MongoDB database driver
@@ -34,7 +44,10 @@ import psycopg2                                     # PostgreSQL database driver
 from cachetools import TTLCache                     # Time-to-live cache
 
 # ==============================================================================
-# Asynchronous and Distributed Computing
+# SECTION: Asynchronous and Distributed Computing
+# ------------------------------------------------------------------------------
+# - This section imports modules and libraries necessary for asynchronous 
+#   programming, task queuing, and real-time communication.
 # ==============================================================================
 from celery import Celery                           # Distributed task queue
 from celery import group                            # Group tasks together
@@ -45,7 +58,10 @@ import asyncio                                      # Asynchronous I/O
 import websockets                                   # WebSocket client and server library
 
 # ==============================================================================
-# Machine Learning and Data Analysis
+# SECTION: Machine Learning and Data Analysis
+# ------------------------------------------------------------------------------
+# - This section imports modules and libraries necessary for machine learning, 
+#   data analysis, and metrics calculation.
 # ==============================================================================
 from sklearn.ensemble import RandomForestRegressor  # Random Forest regression model
 from sklearn.datasets import make_regression        # Generate regression data
@@ -53,14 +69,20 @@ from sklearn.metrics import mean_squared_error      # Calculate mean squared err
 import pandas as pd                                 # Data analysis library
 
 # ==============================================================================
-# Web Scraping and Automation
+# SECTION: Web Scraping and Automation
+# ------------------------------------------------------------------------------
+# - This section imports modules and libraries necessary for web scraping and 
+#   web automation, including CAPTCHA solving.
 # ==============================================================================
 from bs4 import BeautifulSoup                       # Web scraping library
 from selenium import webdriver                      # Web automation library
 from python_anticaptcha import AnticaptchaClient    # CAPTCHA solving service
 
 # ==============================================================================
-# Networking and API Interaction
+# SECTION: Networking and API Interaction
+# ------------------------------------------------------------------------------
+# - This section imports modules and libraries necessary for networking, 
+#   API interactions, and handling HTTP exceptions.
 # ==============================================================================
 from requests.exceptions import HTTPError           # HTTP error exception
 from requests.exceptions import Timeout             # Timeout exception
@@ -68,45 +90,66 @@ from requests.exceptions import RequestException    # General request exception
 from requests.sessions import Session               # HTTP session object
 
 # ==============================================================================
-# Authentication and Security
+# SECTION: Authentication and Security
+# ------------------------------------------------------------------------------
+# - This section imports modules and libraries necessary for hashing, 
+#   password management, and security.
 # ==============================================================================
 import hashlib                                      # Hash algorithms
 from werkzeug.security import generate_password_hash # Password hashing
 from werkzeug.security import check_password_hash    # Password hash verification
 
 # ==============================================================================
-# Logging and Monitoring
+# SECTION: Logging and Monitoring
+# ------------------------------------------------------------------------------
+# - This section imports modules and libraries necessary for logging and 
+#   monitoring the application.
 # ==============================================================================
 import logging.config                               # Logging configuration
 import logging.handlers                             # Logging handlers
 
 # ==============================================================================
-# Optimization and Algorithmic Utilities
+# SECTION: Optimization and Algorithmic Utilities
+# ------------------------------------------------------------------------------
+# - This section imports modules and libraries necessary for optimization 
+#   and algorithmic utilities like hyperparameter tuning.
 # ==============================================================================
 from hyperopt import fmin                           # Hyperparameter optimization
 from hyperopt import tpe                            # Tree-structured Parzen Estimator
 from hyperopt import hp                             # Hyperparameter space
 
 # ==============================================================================
-# Notifications and Messaging
+# SECTION: Notifications and Messaging
+# ------------------------------------------------------------------------------
+# - This section imports modules and libraries necessary for sending SMS and 
+#   email notifications.
 # ==============================================================================
 from twilio.rest import Client                      # Twilio API for SMS
 import smtplib                                      # Simple Mail Transfer Protocol client
 from win10toast import ToastNotifier                # Windows 10 toast notifications
 
 # ==============================================================================
-# Concurrency and Threading
+# SECTION: Concurrency and Threading
+# ------------------------------------------------------------------------------
+# - This section imports modules and libraries necessary for multi-threading 
+#   and concurrent programming.
 # ==============================================================================
 import threading                                    # Multi-threading support
 from queue import Queue                             # FIFO queue data structure
 
 # ==============================================================================
-# Error Handling, Rate Limiting, and Backoff
+# SECTION: Error Handling, Rate Limiting, and Backoff
+# ------------------------------------------------------------------------------
+# - This section imports modules and libraries necessary for error handling, 
+#   rate-limiting, and backoff strategies.
 # ==============================================================================
 import backoff                                      # Exponential backoff algorithm
 
 # ==============================================================================
-# Serialization and Data Manipulation
+# SECTION: Serialization and Data Manipulation
+# ------------------------------------------------------------------------------
+# - This section imports modules and libraries necessary for serialization 
+#   and data manipulation.
 # ==============================================================================
 from marshmallow import Schema                      # Object serialization schema
 from marshmallow import fields                      # Serialization fields
@@ -114,7 +157,10 @@ import json                                         # JSON manipulation
 from itertools import cycle                         # Cyclic iterator
 
 # ==============================================================================
-# Standard Library: Time, Date, OS, and Miscellaneous
+# SECTION: Standard Library - Time, Date, OS, and Miscellaneous
+# ------------------------------------------------------------------------------
+# - This section imports modules and libraries from Python's standard library 
+#   for time, date, OS interaction, and other miscellaneous functionalities.
 # ==============================================================================
 from datetime import datetime                       # Date and time manipulation
 import random                                       # Generate random numbers
