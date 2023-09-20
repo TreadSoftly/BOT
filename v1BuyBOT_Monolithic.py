@@ -1356,83 +1356,156 @@ def retrain_model_with_feedback():
 # ------------------------------------------------------------
 
 
-
-
-
-
-
-
-
-
-
-# Auto-Scaling Workers
+# ============================
+# Constants for Auto-Scaling
+# ============================
+# SCALING_FACTOR: The multiplier for scaling up or down the worker count.
+# MAX_WORKERS: The maximum number of worker instances allowed.
+# MIN_WORKERS: The minimum number of worker instances allowed.
+# current_workers: The current number of worker instances (initialized to MIN_WORKERS).
 SCALING_FACTOR = 2
 MAX_WORKERS = 10
 MIN_WORKERS = 2
 current_workers = MIN_WORKERS
+# ------------------------------------------------------------
 
+
+# ==============================
+# Function: auto_scale_workers
+# ==============================
+# Description:
+#   This Celery task auto-scales the number of worker instances based on the number of pending tasks.
+#   It uses the SCALING_FACTOR, MAX_WORKERS, and MIN_WORKERS constants to determine the new worker count.
+#   The actual logic for scaling the workers is to be implemented where indicated.
 @app.task
 def auto_scale_workers():
+    # Fetch the number of pending tasks.
     pending_tasks = len(app.control.inspect().scheduled().values()[0])
+
+    # Initialize the new_worker_count to the current worker count.
     new_worker_count = current_workers
-    
+
+    # Scaling Logic:
+    # If the number of pending tasks is greater than (current_workers * SCALING_FACTOR),
+    # scale up but not beyond MAX_WORKERS.
     if pending_tasks > current_workers * SCALING_FACTOR:
         new_worker_count = min(MAX_WORKERS, current_workers * SCALING_FACTOR)
+
+    # If the number of pending tasks is less than (current_workers / SCALING_FACTOR),
+    # scale down but not below MIN_WORKERS.
     elif pending_tasks < current_workers / SCALING_FACTOR:
         new_worker_count = max(MIN_WORKERS, current_workers / SCALING_FACTOR)
-    
+
+    # Update the worker count if it's different from the current worker count.
     if new_worker_count != current_workers:
-        # Logic for actually scaling the workers
+        # Implement the actual scaling logic here.
         pass  # Replace with actual scaling logic
 
+    # Update the current worker count.
     current_workers = new_worker_count
+# ------------------------------------------------------------
 
-# Task Dispatch
+
+# ============================
+# Function: dispatch_tasks
+# ============================
+# Description:
+#   This Celery task dispatches a batch of tasks.
+#   It first calls the auto_scale_workers function to ensure optimal worker scaling.
+#   Then, it triggers a group of 'make_purchase' tasks asynchronously.
 @app.task
 def dispatch_tasks():
+    # Auto-scale the workers before dispatching tasks.
     auto_scale_workers()
-    task_ids = range(100)
-    job = group(make_purchase.s(i) for i in task_ids)
-    result = job.apply_async()
 
-# Adaptive Sleep Time for Tasks
+    # Generate a list of task IDs (replace with real task IDs if applicable).
+    task_ids = range(100)
+
+    # Create a Celery group to execute the tasks in parallel.
+    job = group(make_purchase.s(i) for i in task_ids)
+
+    # Apply the group of tasks asynchronously.
+    result = job.apply_async()
+# ------------------------------------------------------------
+
+
+# ============================
+# Function: make_purchase
+# ============================
+# Description:
+#   This Celery task simulates a purchase operation.
+#   It adapts the sleep time dynamically based on the rate-limiting status.
+#   It uses a token bucket for rate-limiting and logs analytics data.
 @app.task
 def make_purchase(product_id):
+    # Access the global variable for adaptive sleep time.
     global adaptive_sleep_time
+
+    # Sleep for the adaptive amount of time.
     sleep(adaptive_sleep_time)
-    
+
+    # Check rate-limiting status using the token bucket.
     if not token_bucket_request():
+        # Log the failure and adapt the sleep time.
         analytics_data['fail'] += 1
         adaptive_sleep_time = min(MAX_SLEEP_TIME, adaptive_sleep_time * FAILURE_INCREASE_FACTOR)
         return
-    
+
+    # Log the execution of this task.
     analytics_data['tasks'] += 1
+
+    # Mask the product_id for security reasons.
     masked_product_id = mask_data(str(product_id))
+
+    # Fetch product details via API.
     response = requests.get(f'https://api.example.com/products/{masked_product_id}')
-    
+
+    # Handle the API response.
     if response.status_code == 200:
-        features = [1, 2, 3, 4]  # Replace with real features
+        # Dummy features for decision-making (replace with real features).
+        features = [1, 2, 3, 4]
+
+        # Make a purchase decision based on the features.
         decision = get_decision(features)
-        
+
+        # Log the decision outcome and adapt the sleep time.
         if decision > 0.5:
             analytics_data['success'] += 1
             adaptive_sleep_time = max(MIN_SLEEP_TIME, adaptive_sleep_time * SUCCESS_DECREASE_FACTOR)
         else:
             analytics_data['fail'] += 1
     else:
+        # Log the failure and adapt the sleep time.
         analytics_data['fail'] += 1
         adaptive_sleep_time = min(MAX_SLEEP_TIME, adaptive_sleep_time * FAILURE_INCREASE_FACTOR)
+# ----------------------------------------------------------------------------------------------------
 
 
-# Geo-Location Based Task Execution
+# ============================
+# Function: make_purchase_geo
+# ============================
+# Description:
+#   This Celery task performs a geolocation-based purchase operation.
+#   It selects the closest server based on the user's geolocation.
+#   The existing task logic should then be implemented, taking into account the closest server.
 @app.task
 def make_purchase_geo(product_id, user_geo_location=user_location):
+    # Find the closest server based on geolocation.
     closest_server = min(geo_locations, key=lambda x: ((user_geo_location[0] - geo_locations[x][0]) ** 2 + (user_geo_location[1] - geo_locations[x][1]) ** 2) ** 0.5)
-    # Your existing task logic here, taking into account the closest server
+    # Implement your existing task logic here, taking into account the closest server.
+# -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Audit Trail Functionality
+
+# =============================
+# Function: create_audit_trail
+# =============================
+# Description:
+#   This Celery task creates an audit trail entry.
+#   It records the action, status, user_id, and any extra information.
+#   The audit data is stored in a MongoDB collection.
 @app.task
 def create_audit_trail(action, status, user_id=None, extra_info=None):
+    # Initialize the audit data dictionary.
     audit_data = {
         "timestamp": datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z',
         "action": action,
@@ -1440,29 +1513,75 @@ def create_audit_trail(action, status, user_id=None, extra_info=None):
         "user_id": user_id,
         "extra_info": extra_info
     }
-    mongo_db['audit_trails'].insert_one(audit_data)
 
-# Flask Endpoints for Audit Trails
+    # Insert the audit data into MongoDB.
+    mongo_db['audit_trails'].insert_one(audit_data)
+# ------------------------------------------------------------
+
+
+# =================================
+# Flask Endpoint: get_audit_trails
+# =================================
+# Description:
+#   This Flask endpoint fetches and returns the audit trails.
+#   The endpoint is protected by login_required.
+# Returns:
+#   JSON response containing the audit trails.
 @flask_app.route('/audit_trails', methods=['GET'])
 @login_required
 def get_audit_trails():
+    # Fetch the audit trails from MongoDB.
     audits = list(mongo_db['audit_trails'].find({}))
-    return jsonify(audits)
 
-# User Feedback Collection and Model Retraining
+    # Return the audits as a JSON response.
+    return jsonify(audits)
+# ------------------------------------------------------------
+
+
+# ===============================
+# Function: collect_and_retrain
+# ===============================
+# Description:
+#   This Celery task collects user feedback and re-trains a machine learning model.
+#   It inserts the feedback into a MongoDB collection and calls logic for retraining the ML model.
 @app.task
 def collect_and_retrain(feedback_data):
+    # Insert the feedback data into MongoDB.
     mongo_db['feedback'].insert_one(feedback_data)
-    # Logic for retraining your ML model here
 
-# Flask Endpoint for Feedback Collection
+    # Implement the logic for retraining your ML model here.
+# -------------------------------------------------------------------
+
+
+# ===================================
+# Flask Endpoint: collect_feedback
+# ===================================
+# Description:
+#   This Flask endpoint collects user feedback.
+#   The endpoint is protected by login_required.
+# Returns:
+#   JSON response confirming the collection of feedback.
 @flask_app.route('/feedback', methods=['POST'])
 @login_required
 def collect_feedback():
+    # Parse the feedback data from the request body.
     feedback_data = request.json
-    collect_and_retrain.apply_async(args=[feedback_data])
-    return jsonify({"status": "Feedback successfully collected"})
 
-# Main Execution
+    # Dispatch the collect_and_retrain task asynchronously.
+    collect_and_retrain.apply_async(args=[feedback_data])
+
+    # Return a success response.
+    return jsonify({"status": "Feedback successfully collected"})
+# ------------------------------------------------------------------
+
+
+# =========================
+# Main Execution Block
+# =========================
+# Description:
+#   The main block that runs the Flask application.
+#   It sets the Flask application to run in debug mode.
 if __name__ == '__main__':
+    # Run the Flask application in debug mode.
     flask_app.run(debug=True)
+# ------------------------------------------------------------
