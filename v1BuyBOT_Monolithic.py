@@ -167,41 +167,65 @@ import random                                       # Generate random numbers
 import time                                         # Time-related functions
 from time import sleep                              # Sleep function
 import os                                           # Operating system interfaces
+# ------------------------------------------------------------------------------------------------------------------------------
+
+
+#############################################################
+                # GLOBAL VARIABLES #
+#############################################################
+# =============================================================
+# Global variables for analytics and adaptive sleep time
+analytics_data = {}
+adaptive_sleep_time = 1
+MIN_SLEEP_TIME = 0.5
+# -------------------------------------------------------------
+# ADD MORE (ALL) OF THE REST OF THE GLOBAL VARIABLES HERE
+
+# --------------------------------------------------------------
 
 
 # =============================
 # APPLICATION INITIALIZATION
 # =============================
-# Initialize Flask application and allow cross-origin requests
+# Purpose: This section is dedicated to the initialization of the Flask application and the allowance of cross-origin requests.
+# Components:
+#   - Flask: Web framework
+#   - CORS: For handling Cross-Origin Resource Sharing
 flask_app = Flask(__name__)
 CORS(flask_app)
-# -------------------------------------------------------
+# ------------------------------------------------------------
 
 
 # =====================================
 # Logging Configuration
 # =====================================
-# Initialize a logger to collect application logs
-# Configure log rotation based on midnight triggers
+# Purpose: Configure a logger to collect and store application logs.
+# Components:
+#   - python-logstash-logger: For creating the logging instance
+#   - TimedRotatingFileHandler: For handling log rotation
 logger = logging.getLogger('python-logstash-logger')
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.handlers.TimedRotatingFileHandler('my_log.log', when="midnight", interval=1, backupCount=10))
-# ----------------------------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------
 
 
 # =====================================
 # Redis Initialization
 # =====================================
-# Establish connection to Redis server running on localhost at port 6379
-# Select the 0th database for storing data
+# Purpose: Establish a connection to a Redis server for data storage and caching.
+# Components:
+#   - Redis: The Redis server instance
 redis = Redis(host='localhost', port=6379, db=0)
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------
 
 
 # =====================================
 # Celery Initialization
 # =====================================
-# Initialize Celery application with a Redis broker
+# Purpose: Initialize the Celery application for asynchronous task execution.
+# Components:
+#   - Celery: The Celery application instance
+#   - Broker: Redis as the message broker
 app = Celery('my_bot', broker='redis://localhost:6379/0')
 # ------------------------------------------------------------
 
@@ -209,16 +233,21 @@ app = Celery('my_bot', broker='redis://localhost:6379/0')
 # =====================================
 # Rate Limiter Configuration
 # =====================================
-# Initialize a rate limiter to limit the number of API requests per IP address
+# Purpose: Introduce rate limiting to control the API request rate.
+# Components:
+#   - Limiter: The rate limiter
+#   - key_func: Function to identify the client
 limiter = Limiter(app=flask_app, key_func=get_remote_address, default_limits=["200 per day", "50 per hour"])
-# -------------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------
 
 
 # =====================================
 # MongoDB Initialization
 # =====================================
-# Establish a connection to MongoDB running on localhost at port 27017
-# Select 'mydatabase' as the database to use
+# Purpose: Establish a connection to a MongoDB database.
+# Components:
+#   - MongoClient: The MongoDB client
+#   - mongo_db: The database instance
 mongo_client = MongoClient('mongodb://localhost:27017/')
 mongo_db = mongo_client['mydatabase']
 # ------------------------------------------------------------
@@ -227,7 +256,10 @@ mongo_db = mongo_client['mydatabase']
 # =======================================
 # SQLite and PostgreSQL Initialization
 # =======================================
-# Establish connection to SQLite and PostgreSQL databases
+# Purpose: Initialize connections to SQLite and PostgreSQL databases.
+# Components:
+#   - engine_sqlite: SQLite database engine
+#   - engine_postgresql: PostgreSQL database engine
 engine_sqlite = create_engine('sqlite:///database.db')
 engine_postgresql = create_engine('postgresql://username:password@localhost/dbname')
 # ------------------------------------------------------------
@@ -236,7 +268,9 @@ engine_postgresql = create_engine('postgresql://username:password@localhost/dbna
 # =====================================
 # Login Manager Initialization
 # =====================================
-# Initialize the login manager and integrate it with Flask
+# Purpose: Initialize the login manager for user authentication.
+# Components:
+#   - LoginManager: The login manager instance
 login_manager = LoginManager()
 login_manager.init_app(flask_app)
 # ------------------------------------------------------------
@@ -245,7 +279,9 @@ login_manager.init_app(flask_app)
 # =====================================
 # Analytics Data Initialization
 # =====================================
-# Initialize a dictionary to collect analytics data
+# Purpose: Initialize a dictionary to keep track of analytics data.
+# Components:
+#   - analytics_data: Dictionary storing tasks, success, and fail counts
 analytics_data = {'tasks': 0, 'success': 0, 'fail': 0}
 # ------------------------------------------------------------
 
@@ -253,7 +289,10 @@ analytics_data = {'tasks': 0, 'success': 0, 'fail': 0}
 # =====================================
 # Email Configuration
 # =====================================
-# Configure email settings for sending notifications or alerts
+# Purpose: Configure the email service for sending notifications.
+# Components:
+#   - Mail: The Mail instance
+#   - mail_settings: Dictionary containing mail configuration
 mail_settings = {
     "MAIL_SERVER": 'smtp.example.com',
     "MAIL_PORT": 465,
@@ -270,25 +309,32 @@ mail = Mail(flask_app)
 # =====================================
 # JWT Configuration
 # =====================================
-# Configure JWT for secure authentication
+# Purpose: Configure JWT for secure authentication of users.
+# Components:
+#   - JWTManager: JWT Manager instance
+#   - JWT_SECRET_KEY: Secret key for JWT
 flask_app.config['JWT_SECRET_KEY'] = 'your_jwt_secret_key'
 jwt = JWTManager(flask_app)
 # ------------------------------------------------------------
 
 
 # =====================================
-# Password Hashing
+# Password Hashing Function
 # =====================================
-# Function to hash a given password using SHA-256
+# Purpose: Hash passwords for secure storage.
+# Components:
+#   - generate_password_hash: Function from Werkzeug library
 def hash_password(password):
     return generate_password_hash(password, method='sha256')
 # ------------------------------------------------------------
 
 
 # =====================================
-# Password Verification
+# Password Verification Function
 # =====================================
-# Function to check if the given password matches the hashed password
+# Purpose: Verify if the entered password matches the stored hashed password.
+# Components:
+#   - check_password_hash: Function from Werkzeug library
 def check_password(password, hashed_password):
     return check_password_hash(hashed_password, password)
 # ------------------------------------------------------------
@@ -297,7 +343,9 @@ def check_password(password, hashed_password):
 # =====================================
 # User Class for Authentication
 # =====================================
-# Define a User class to hold user attributes and methods
+# Purpose: Define a User class to hold user attributes and methods for authentication.
+# Components:
+#   - UserMixin: Mixin class providing default implementations for user object
 class User(UserMixin):
     def __init__(self, id):
         self.id = id
@@ -307,7 +355,9 @@ class User(UserMixin):
 # =====================================
 # User Loader for Login Manager
 # =====================================
-# Function to load user by ID
+# Purpose: Function to load user by their ID for session management.
+# Components:
+#   - login_manager.user_loader: Decorator to set the callback for reloading a user from the session
 @login_manager.user_loader
 def load_user(user_id):
     return User(user_id)
@@ -315,11 +365,30 @@ def load_user(user_id):
 
 
 # =====================================
-# Audit Trail Management
+# Audit Trail Management Module
 # =====================================
+# This module focuses on creating an audit trail for various user actions.
+# It uses Celery for asynchronous task management.
+
+# Import Celery application context
+from your_celery_app import app  
+from datetime import datetime
+from your_mongo_module import mongo_db
+
 # Asynchronous function to create an audit trail record
-@app.task
+@app.task  # Celery task decorator
 def create_audit_trail(action, status, user_id=None, extra_info=None):
+    """
+    Create an audit trail record in MongoDB.
+    Parameters:
+    - action (str): The action performed.
+    - status (str): The status of the action.
+    - user_id (str, optional): The user's ID. Default is None.
+    - extra_info (dict, optional): Additional information. Default is None.
+    Returns:
+    None
+    """
+    # Create a dictionary with the audit data
     audit_data = {
         "timestamp": datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z',
         "action": action,
@@ -327,25 +396,30 @@ def create_audit_trail(action, status, user_id=None, extra_info=None):
         "user_id": user_id,
         "extra_info": extra_info
     }
+    
+    # Insert the audit data into the MongoDB collection 'audit_trails'
     mongo_db['audit_trails'].insert_one(audit_data)
 # ------------------------------------------------------------
 
 
 # ===============================================================================================
-# analytics_data: A dictionary to keep track of analytics data like task success and failure.
+# Analytics Data Module
 # ===============================================================================================
+# This module keeps track of various analytics data such as task success and failure.
+
+# Global variable to keep track of analytics data
 analytics_data = {'success': 0, 'fail': 0, 'tasks': 0}
-# Functions
-@app.task  # Celery decorator to make the function an asynchronous task
+
+# Define asynchronous function for purchase with failover logic
+@app.task  # Celery task decorator
 def make_purchase_with_failover(product_id):
     """
-    Initiates a purchase for a specific product ID.
-    Args:
-    - product_id: The ID of the product to be purchased.
-    Workflow:
-    1. Attempts to fetch product information from the primary API.
-    2. On failure, switches to a backup data retrieval method.
-    3. Processes the retrieved features for decision-making.
+    Initiates a purchase for a specific product ID with failover logic.
+    It first attempts to fetch product information from the primary API. If that fails, it switches to a backup data retrieval method.   
+    Parameters:
+    - product_id (str): The ID of the product to be purchased.
+    Returns:
+    None
     """
     try:
         # Attempt to fetch product information from primary API
@@ -368,82 +442,121 @@ def make_purchase_with_failover(product_id):
 
 
 # ========================================
-# User management related functionality
-# =========================================
+# User Management Module
+# ========================================
+# This module provides the basic structure for user management.
+# It employs the UserMixin class for handling user sessions and data.
+
+from flask_login import UserMixin
+
 class User(UserMixin):
     """
-    User class to handle user-specific data.
+    User class for user management.
+    Implements methods and properties required by Flask-Login for user sessions.
     Attributes:
-    - id: Unique identifier for a user.
+    - id (str): The unique ID of the user.
+    Methods:
+    None
     """
     def __init__(self, id):
         self.id = id
-# -------------------------------------------------------
-@login_manager.user_loader
+# ------------------------------------------------------------ #
+# User loader function for Flask-Login
+@login_manager.user_loader  # Flask-Login decorator for user loading
 def load_user(user_id):
     """
-    Fetches user object based on user_id.
-    Args:
-    - user_id: Unique identifier for the user.
+    Fetches a User object given a user_id.
+    Parameters:
+    - user_id (str): The unique ID for the user.
     Returns:
-    - User object corresponding to the user_id.
+    - User: An instance of the User class.
     """
     return User(user_id)
-# -------------------------------------------------------
+# ------------------------------------------------------------
 
 
 # ===========================================
-# Token Bucket Algorithm for Rate Limiting
+# Rate Limiting Module
 # ===========================================
+# This module handles rate limiting for API requests.
+# It employs a token bucket algorithm to limit the number of requests.
+
+# Token bucket algorithm for rate limiting
 def token_bucket_request():
     """
-    Implements token bucket algorithm for rate-limiting API requests.
+    Implements the token bucket algorithm for rate limiting.
+    Checks if tokens are available in the Redis store.
     Returns:
-    - True if tokens are available, allowing the request.
-    - False if no tokens are available, denying the request.
+    - bool: True if tokens are available, False otherwise.
     """
+    # Fetch the current number of tokens from Redis
     tokens = int(redis.get("tokens") or 10)
     if tokens > 0:
+        # Decrement the token count by 1
         redis.decr("tokens", 1)
         return True
     return False
 # ------------------------------------------------------------
 
 
-# =====================================
-# Machine Learning Model for Decision Making
-# =====================================
+# =========================================
+# Machine Learning Decision-Making Module
+# =========================================
+# This module is responsible for making decisions based on machine learning models.
+
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.datasets import make_regression
+
 def get_decision(features):
     """
-    Makes a purchase decision based on product features using a pre-trained machine learning model.
-    Args:
-    - features: List of product features.
+    Utilizes a pre-trained RandomForest model to make a purchase decision based on given product features.   
+    Parameters:
+    - features (list): List of product features used for decision making.
     Returns:
-    - Decision score.
+    - float: The decision score generated by the machine learning model.
     """
-    # Generating synthetic data for demonstration. Replace this with real data.
+    # Generating synthetic data for demonstration. Replace this with actual training data.
     X, y = make_regression(n_samples=100, n_features=4, noise=0.1)
+    
+    # Initialize and train the RandomForest model
     model = RandomForestRegressor(n_estimators=100, max_depth=2)
     model.fit(X, y)
+    
+    # Make a decision based on the provided features
     decision = model.predict([features])[0]
     return decision
 # ------------------------------------------------------------
 
 
 # =====================================
-# HTTP Response Processing
+# HTTP Response Processing Module
 # =====================================
+# This module processes the HTTP responses received from various APIs and updates the analytics data accordingly.
+
+# Global variables for adaptive sleep time
+adaptive_sleep_time = 1  # Initialize with 1 second
+SUCCESS_DECREASE_FACTOR = 0.9
+FAILURE_INCREASE_FACTOR = 1.1
+MIN_SLEEP_TIME = 0.5
+MAX_SLEEP_TIME = 10.0
+
 def process_response(response, product_id):
     """
-    Processes the HTTP response from product API and updates analytics.
-    Args:
-    - response: HTTP response object.
-    - product_id: Unique identifier for the product.
+    Processes the received HTTP response and updates the analytics data.
+    Parameters:
+    - response (HTTPResponse): The received HTTP response object.
+    - product_id (str): The unique ID for the product.
+    Returns:
+    None
     """
-    global adaptive_sleep_time
+    global adaptive_sleep_time  # Declare global variable for adaptive sleep time
+    
+    # Check for successful HTTP status code
     if response.status_code == 200:
-        features = [1, 2, 3, 4]  # Replace with real features
+        features = [1, 2, 3, 4]  # Replace with actual feature extraction
         decision = get_decision(features)
+        
+        # Make a decision based on the decision score
         if decision > 0.5:
             update_analytics('success')
             logger.info(f"Successfully made a decision for product {product_id}")
@@ -452,51 +565,59 @@ def process_response(response, product_id):
             update_analytics('fail')
             logger.warning(f"Failed to make a decision for product {product_id}")
     else:
+        # Log failure and update analytics
         update_analytics('fail')
         logger.error(f"Failed to fetch product {product_id}")
         adaptive_sleep_time = update_sleep_time(FAILURE_INCREASE_FACTOR, MAX_SLEEP_TIME)
-# ------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 
 
 # =====================================
-# Analytics Management
+# Function: update_analytics
 # =====================================
 def update_analytics(key):
     """
-    Increments the analytics counter for a specific event type.
+    Purpose:
+        Increments the analytics counter for a specific event type.
     Args:
-    - key: The type of event to update ('success', 'fail').
+        key (str): The type of event to update ('success', 'fail').
+    Side Effects:
+        Modifies the global `analytics_data` dictionary.
     """
     analytics_data[key] += 1
 # ------------------------------------------------------------
 
 
 # =====================================
-# Adaptive Sleep Time Function
+# Function: update_sleep_time
 # =====================================
 def update_sleep_time(factor, limit):
     """
-    Updates the adaptive sleep time based on a given factor and limit.  
+    Purpose:
+        Updates the adaptive sleep time based on a given factor and limit.
     Args:
-    - factor: Multiplier for the adaptive sleep time.
-    - limit: The maximum or minimum limit for the adaptive sleep time.
+        factor (float): Multiplier for the adaptive sleep time.
+        limit (float): The maximum or minimum limit for the adaptive sleep time.
     Returns:
-    - Updated sleep time within the specified limit.
+        float: Updated sleep time within the specified limit.
     """
     return min(max(adaptive_sleep_time * factor, MIN_SLEEP_TIME), limit)
 # ------------------------------------------------------------
 
 
-# ======================================================
-# Hyperparameter Tuning for Machine Learning Model
-# ======================================================
+# =====================================
+# Function: objective
+# =====================================
 def objective(params):
     """
-    Objective function for hyperparameter optimization.
+    Purpose:
+        Objective function for hyperparameter optimization for a machine learning model.
     Args:
-    - params: Dictionary containing hyperparameters for the model.
+        params (dict): Dictionary containing hyperparameters for the model.
     Returns:
-    - Mean squared error for the model trained with given parameters.
+        float: Mean squared error for the model trained with given parameters.        
+    Note:
+        This function uses the RandomForestRegressor for demonstration. Replace as needed.
     """
     X, y = make_regression(n_samples=100, n_features=4, noise=0.1)
     model = RandomForestRegressor(n_estimators=int(params['n_estimators']), max_depth=int(params['max_depth']))
@@ -507,126 +628,128 @@ def objective(params):
 
 
 # =====================================
-# Analytics API Endpoint
+# API Endpoint: analytics_endpoint
 # =====================================
 @app.route('/analytics', methods=['GET'])
 @limiter.limit("5 per minute")
 def analytics_endpoint():
     """
-    Flask endpoint for analytics. Rate-limited to 5 requests per minute.
+    Purpose:
+        Flask API endpoint for fetching analytics data.
     Returns:
-    - JSON object containing analytics data.
+        dict: JSON object containing analytics data.   
+    Rate Limit:
+        5 requests per minute.
     """
     return jsonify(analytics_data)
 # ------------------------------------------------------------
 
 
 # =====================================
-# User Login API Endpoint
+# API Endpoint: login_endpoint
 # =====================================
 @app.route('/login', methods=['POST'])
 @login_required
 def login_endpoint():
     """
-    Flask endpoint for user login.
+    Purpose:
+        Flask API endpoint for user login.
     Returns:
-    - JSON object indicating login status.
+        dict: JSON object indicating login status.
+    Note:
+        Authentication is required.
     """
     user = User(request.form['username'])
     login_user(user)
     return jsonify({'status': 'Logged in'})
-# --------------------------------------------------------------------------
+# ------------------------------------------------------------
 
 
 # =====================================
-# User Logout API Endpoint
+# API Endpoint: logout_endpoint
 # =====================================
 @app.route('/logout', methods=['POST'])
 @login_required
 def logout_endpoint():
     """
-    Flask endpoint for user logout.
+    Purpose:
+        Flask API endpoint for user logout.     
     Returns:
-    - JSON object indicating logout status.
+        dict: JSON object indicating logout status.     
+    Note:
+        Authentication is required.
     """
     logout_user()
     return jsonify({'status': 'Logged out'})
-# ---------------------------------------------------------------------------
+# ------------------------------------------------------------
 
 
 # =====================================
-# Health Check API Endpoint
+# API Endpoint: health_endpoint
 # =====================================
 @app.route('/health', methods=['GET'])
 def health_endpoint():
     """
-    Flask endpoint for system health check.
+    Purpose:
+        Flask API endpoint for system health check.
     Returns:
-    - JSON object containing health status and details.
+        dict: JSON object containing health status and details.
+    HTTP Status:
+        200 if all services are healthy, otherwise 500.
     """
     status = health_check()
     return jsonify({"status": "Healthy" if all(status.values()) else "Unhealthy", "details": status}), 200 if all(status.values()) else 500
-# ----------------------------------------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------------------------------------------------
 
 
 # =====================================
 # Function: health_check
 # =====================================
-# Purpose: To perform health checks on various services.
-# Returns: A dictionary containing the health status of each service.
-# ===========================================================================
 def health_check():
+    """
+    Purpose:
+        To perform health checks on various services.
+    Returns:
+        dict: A dictionary containing the health status of each service.     
+    Note:
+        Checks the health of various services like API, MongoDB, SQLite, PostgreSQL, and Redis.
+    """
     # Initialize an empty dictionary to store the health status of each service.
     status = {}
     
     # Health check for API
     try:
-        # Perform an HTTP GET request to the API's health endpoint.
-        # A 200 status code means the API is healthy.
         status["API"] = requests.get('https://api.example.com/health').status_code == 200
     except:
-        # If an exception occurs, set the API health status to False.
         status["API"] = False
     
     # Health check for MongoDB
     try:
-        # Attempt to retrieve server information from the MongoDB client.
-        # If successful, MongoDB is healthy.
         status["MongoDB"] = mongo_client.server_info() is not None
     except:
-        # If an exception occurs, set the MongoDB health status to False.
         status["MongoDB"] = False
 
     # Health check for SQLite
     try:
-        # Attempt to connect to the SQLite database and execute a basic SQL query.
-        # If successful, SQLite is healthy.
         with sqlite3.connect('database.db') as conn:
             conn.cursor().execute("SELECT 1")
         status["SQLite"] = True
     except:
-        # If an exception occurs, set the SQLite health status to False.
         status["SQLite"] = False
 
     # Health check for PostgreSQL
     try:
-        # Attempt to connect to the PostgreSQL database and execute a basic SQL query.
-        # If successful, PostgreSQL is healthy.
         with psycopg2.connect(database="dbname", user="username", password="password", host="localhost") as conn:
             conn.cursor().execute("SELECT 1")
         status["PostgreSQL"] = True
     except:
-        # If an exception occurs, set the PostgreSQL health status to False.
         status["PostgreSQL"] = False
 
     # Health check for Redis
     try:
-        # Use the Redis client to send a PING command.
-        # If successful, Redis is healthy.
         redis.ping()
         status["Redis"] = True
     except:
-        # If an exception occurs, set the Redis health status to False.
         status["Redis"] = False
     
     # Return the health status dictionary.
@@ -634,560 +757,952 @@ def health_check():
 # ------------------------------------------------------------
 
 
-# =====================================
+
+                               # MAIN #
+# ==============================================================================
 # MAIN SCRIPT ENTRY POINT
-# =====================================
-# When the Python interpreter reads a source file, it first sets the special variable __name__ to "__main__".
-# In this case, the Flask application runs with debug mode turned on.
+# ==============================================================================
+# Objective:
+#   Initialize and run the Flask application.
+#
+# Python's Behavior:
+#   The special variable '__name__' is set to "__main__" when this script is
+#   executed directly, rather than being imported as a module.
+#
+# Dependencies:
+#   - flask_app: Assumed to be initialized elsewhere in the code, containing
+#     the Flask application object.
+#
+# Execution:
+#   If this script is the main program, it starts the Flask application
+#   with debugging enabled for real-time code changes and easier troubleshooting.
+# ==============================================================================
 if __name__ == '__main__':
     flask_app.run(debug=True)
-# ------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 
-# ========================================
-# SAFE HTTP REQUEST FUNCTION WITH BACKOFF
-# ========================================
-# This function wraps the 'requests.get()' method with an exponential backoff mechanism.
-# It uses the 'backoff.on_exception()' decorator to implement the retry logic.
-# The function will retry up to 8 times if it encounters an HTTPError, Timeout, or RequestException.
+# ==============================================================================
+# FUNCTION: safe_requests_get
+# ==============================================================================
+# Objective:
+#   To make HTTP GET requests while handling failures gracefully through
+#   exponential backoff.
+#
+# Parameters:
+#   - url (str): The target URL to fetch.
+#
+# Returns:
+#   - Response object: Contains the server's response to the HTTP GET request.
+#
+# Decorators Used:
+#   - backoff.on_exception: Implements exponential backoff.
+#
+# Exception Handling:
+#   - HTTPError, Timeout, RequestException: Types of exceptions to catch and retry.
+#
+# Maximum Retries:
+#   The function will retry up to 8 times before giving up.
+#
+# Dependencies:
+#   - requests: Python library for making HTTP requests.
+#   - backoff: Python library for retrying operations with exponential backoff.
+# ==============================================================================
 @backoff.on_exception(backoff.expo, (HTTPError, Timeout, RequestException), max_tries=8)
 def safe_requests_get(url):
     return requests.get(url)
-# ------------------------------------------------------------
+# ------------------------------------------------------------------------------------
 
 
-# ============================================================================
-# Function: real_time_monitoring
-# ============================================================================
-# Description: 
-#   Monitors an item URL in real-time, performing health checks and logging.
-# Parameters: 
-#   - item_url: URL of the item to monitor
-#   - max_retries: Maximum number of retries before stopping the monitor
-#   - initial_sleep_time: Initial sleep time between retries
-#   - max_sleep_time: Maximum sleep time between retries
-# Returns: None
-# Example Usage: 
-#   real_time_monitoring("https://example.com/item", max_retries=3)
-# ----------------------------------------------------------------------------
+# ==============================================================================
+# FUNCTION: real_time_monitoring
+# ==============================================================================
+# Objective:
+#   Monitors the availability of a specific item at a given URL in real-time.
+#
+# Parameters:
+#   - item_url (str): The URL to monitor.
+#   - max_retries (int, optional): Maximum number of retries for HTTP requests. Default is 3.
+#   - initial_sleep_time (int, optional): Initial sleep time between retries in seconds. Default is 1.
+#   - max_sleep_time (int, optional): Maximum sleep time between retries in seconds. Default is 60.
+#
+# Returns:
+#   - None: Function performs actions but does not return any value.
+#
+# Internal Variables:
+#   - retries (int): Counter for the number of failed attempts.
+#   - sleep_time (int): Dynamic sleep time between retries.
+#
+# Internal Functions:
+#   - health_check: Checks the health of dependent services.
+#   - safe_requests_get: Makes a safe HTTP GET request to the item URL.
+#
+# Exception Handling:
+#   - HTTPError, Timeout, RequestException: Types of exceptions to catch and retry.
+#
+# Logging:
+#   Uses logger to log information and errors.
+#
+# Dependencies:
+#   - time: Python standard library for time-based functions.
+#   - logger: Assumed to be configured elsewhere for logging.
+# ==============================================================================
 def real_time_monitoring(item_url, max_retries=3, initial_sleep_time=1, max_sleep_time=60):
-    # Initialize retry counter and sleep time
     retries, sleep_time = 0, initial_sleep_time
-    
-    # Start an infinite loop for real-time monitoring
     while True:
-        # Conduct health checks of all dependent services
         health_status = health_check()
-        
-        # Continue only if all health checks are successful
         if all(health_status.values()):
             try:
-                # Make a safe request to the item URL and check for availability
                 response = safe_requests_get(item_url)
                 response.raise_for_status()
                 logger.info("Item is available!" if is_item_available(response.text) else "Item is not available!")
-                
-            # Handle exceptions and increment retry counter
             except (HTTPError, Timeout, RequestException):
                 retries += 1
-                # Exit monitoring if max retries reached
                 if retries > max_retries:
                     logger.error("Max retries reached, stopping the monitor.")
                     return
-                
-                # Increase sleep time exponentially, capped by max_sleep_time
                 sleep_time = min(sleep_time * 2, max_sleep_time)
                 time.sleep(sleep_time)
-        
-        # Log a warning if health check fails
         else:
             logger.warning(f"Health check failed: {health_status}")
             time.sleep(max_sleep_time)
-# ---------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 
-# ============================================================================
-# Function: health_check
-# ============================================================================
-# Description: 
-#   Performs health checks on various system components including APIs, databases, 
-#   and other services. Returns a dictionary indicating the health status.
-# Parameters: None
-# Returns: 
-#   - status: Dictionary containing the health status of various services.
-# Example Usage: 
-#   status = health_check()
-#   if all(status.values()): print("All systems go!")
-# ----------------------------------------------------------------------------
+# ==============================================================================
+# FUNCTION: health_check
+# ==============================================================================
+# Objective:
+#   To check the health of various dependent services like APIs, databases, etc.
+#
+# Parameters:
+#   - None
+#
+# Returns:
+#   - dict: A dictionary where keys are service names and values are boolean
+#           indicators of the services' health.
+#
+# Internal Variables:
+#   - status (dict): Dictionary to hold the health status of each service.
+#
+# Exception Handling:
+#   - Uses try-except blocks to catch any exceptions that occur during health checks.
+#
+# Dependencies:
+#   - requests: Python library for making HTTP requests.
+#   - sqlite3, psycopg2: Python libraries for database interaction.
+#   - os: Python standard library for OS-level operations.
+# ==============================================================================
 def health_check():
-    # Initialize an empty dictionary to store the status of each service.
     status = {}
-    
-    # Health check for a generic API endpoint.
     try:
         status["API"] = requests.get('https://api.example.com/health').status_code == 200
     except:
         status["API"] = False
-    
-    # Health check for MongoDB.
     try:
         status["MongoDB"] = mongo_client.server_info() is not None
     except:
         status["MongoDB"] = False
-
-    # Health check for SQLite.
     try:
         with sqlite3.connect('database.db') as conn:
             conn.cursor().execute("SELECT 1")
         status["SQLite"] = True
     except:
         status["SQLite"] = False
-
-    # Health check for PostgreSQL.
     try:
         with psycopg2.connect(database="dbname", user="username", password="password", host="localhost") as conn:
             conn.cursor().execute("SELECT 1")
         status["PostgreSQL"] = True
     except:
         status["PostgreSQL"] = False
-
-    # Health check for Redis.
     try:
         redis.ping()
         status["Redis"] = True
     except:
         status["Redis"] = False
-
-    # Health check for available disk space.
     try:
         disk_space = os.statvfs('/')
         status["System"] = disk_space.f_frsize * disk_space.f_bavail > 1000000
     except:
         status["System"] = False
-
     return status
-# ------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 
-# ============================================================================
-# Function: is_item_available
-# ============================================================================
-# Description: 
-#   Checks if an item is available based on the HTML content of a webpage.
-#   Placeholder function; actual logic to be implemented.
-# Parameters: 
-#   - html_content: HTML content as a string
-# Returns: 
-#   - Boolean value indicating item availability.
-# Example Usage: 
-#   is_available = is_item_available("<html>...</html>")
-#   if is_available: print("Item is available!")
-# ----------------------------------------------------------------------------
+# ==============================================================================
+# FUNCTION: is_item_available
+# ==============================================================================
+# Objective:
+#   To determine the availability of an item based on the HTML content of a webpage.
+#
+# Parameters:
+#   - html_content (str): HTML content of the page to examine.
+#
+# Returns:
+#   - bool: True if the item is available, False otherwise.
+#
+# Note:
+#   This is a placeholder function. The actual logic for checking item availability
+#   is yet to be implemented.
+# ==============================================================================
 def is_item_available(html_content):
-    # Placeholder logic; actual availability check to be implemented.
     return False
-# ------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 
-# ============================================================================
+
+# ==============================================================================
 # Class: UserProfile
-# ============================================================================
-# Description:
-#   Class representing a user profile with attributes such as strategy, payment_method, etc.
-# Parameters: 
-#   - user_id: Unique identifier for the user.
-#   - strategy: Investment strategy (e.g., 'conservative', 'moderate', 'aggressive').
-#   - payment_method: Preferred payment method.
-#   - preferences: Additional user preferences.
+# ==============================================================================
+# The UserProfile class models a user in the e-commerce system. It holds various
+# details about the user and provides methods for fetching more specific, calculated,
+# or otherwise derived information about that user.
+#
+# Attributes:
+#   user_id: str - Unique identifier for the user.
+#   strategy: str - Investment strategy, can be 'conservative', 'moderate', 'aggressive'.
+#   payment_method: str - Payment method, e.g., 'credit_card', 'paypal'.
+#   preferences: dict - Additional user settings like notifications.
+#
 # Methods:
-#   - get_decision_threshold: Returns the decision threshold based on the user's strategy.
-#   - get_payment_details: Placeholder for payment details (to be implemented).
-#   - get_custom_features: Returns a list of custom features (placeholder).
-# ----------------------------------------------------------------------------
+#   get_decision_threshold() -> float: Decision-making threshold based on strategy.
+#   get_payment_details() -> str: Placeholder for future implementation.
+#   get_custom_features() -> List[int]: Placeholder for custom features.
+# ==============================================================================
 class UserProfile:
     def __init__(self, user_id, strategy, payment_method, preferences):
-        self.user_id = user_id  # Unique identifier for the user.
-        self.strategy = strategy  # Investment strategy, e.g., 'conservative', 'moderate', 'aggressive'.
-        self.payment_method = payment_method  # Preferred payment method, e.g., 'credit_card', 'paypal'.
-        self.preferences = preferences  # Additional preferences, e.g., notifications settings.
-# ------------------------------------------------------------
-    # Method: get_decision_threshold
-    # Description: Determines the decision threshold based on the user's investment strategy.
-    # Returns: The decision threshold as a float.
+        """
+        Initialize a new UserProfile instance.
+
+        :param user_id: Unique identifier for the user.
+        :type user_id: str
+        :param strategy: Investment strategy, can be 'conservative', 'moderate', 'aggressive'.
+        :type strategy: str
+        :param payment_method: Preferred method of payment, e.g., 'credit_card', 'paypal'.
+        :type payment_method: str
+        :param preferences: Additional user settings like notifications.
+        :type preferences: dict
+        """
+        self.user_id = user_id
+        self.strategy = strategy
+        self.payment_method = payment_method
+        self.preferences = preferences
+# ------------------------------------------------------------------------------
     def get_decision_threshold(self):
+        """
+        Calculate and return the decision threshold based on the user's strategy.
+
+        :return: Decision threshold
+        :rtype: float
+        """
+        # Mapping of strategies to thresholds; default is 0.5
         return {'aggressive': 0.4, 'moderate': 0.5, 'conservative': 0.6}.get(self.strategy, 0.5)
-# ------------------------------------------------------------
-    # Method: get_payment_details
-    # Description: Placeholder for fetching payment details (to be implemented).
-    # Returns: Placeholder string.
+# ------------------------------------------------------------------------------
     def get_payment_details(self):
+        """
+        Placeholder for payment details. Future implementation will replace this.
+
+        :return: Placeholder string for payment details.
+        :rtype: str
+        """
         return "Payment details here"
-# ------------------------------------------------------------
-    # Method: get_custom_features
-    # Description: Placeholder for returning a list of custom features.
-    # Returns: A list of integers (placeholder).
+# ------------------------------------------------------------------------------
     def get_custom_features(self):
+        """
+        Placeholder for custom features. Future implementation will replace this.
+
+        :return: Placeholder list of integers for custom features.
+        :rtype: List[int]
+        """
         return [1, 2, 3, 4]
-# ------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 
 # ============================================================================
 # Function: api_failover
 # ============================================================================
-# Description: 
-#   Failover mechanism that scrapes product data if the API call fails.
-# Parameters: 
-#   - product_id: The unique identifier for the product.
-# Returns: 
-#   - The scraped product data or None if scraping also fails.
+# Purpose:
+#   Acts as a failover mechanism that performs web scraping to fetch product data 
+#   in case the primary API call fails.
+# 
+# Parameters:
+#   product_id (str): The unique identifier for the product.
+# 
+# Returns:
+#   str | None: Scraped product data as a string or None if both API and scraping fail.
+#
 # Example Usage:
 #   product_data = api_failover("1234")
-#   if product_data: print("Scraped data:", product_data)
-# ----------------------------------------------------------------------------
+#   if product_data:
+#       print(f"Scraped Data: {product_data}")
+# ============================================================================
 def api_failover(product_id):
+    """
+    Web scraping-based failover mechanism for product data retrieval.
+    
+    This function kicks in when the primary API call for fetching product data fails.
+    It uses Selenium's Chrome WebDriver to navigate to the product's webpage and scrape
+    the necessary data.
+
+    Parameters:
+    product_id (str): The unique identifier for the product.
+
+    Returns:
+    str | None: The scraped product data or None if scraping fails.
+    """
     try:
-        driver = webdriver.Chrome()  # Initialize Chrome WebDriver.
-        driver.get(f"https://example.com/products/{product_id}")  # Navigate to the product page.
-        product_data = driver.find_element_by_id("product-info").text  # Scrape product data.
-        driver.quit()  # Close the WebDriver.
+        # Initialize Chrome WebDriver for web scraping
+        driver = webdriver.Chrome()
+        
+        # Navigate to the URL where the product data is displayed
+        driver.get(f"https://example.com/products/{product_id}")
+        
+        # Scrape the product data based on its HTML element ID
+        product_data = driver.find_element_by_id("product-info").text
+        
+        # Close the WebDriver session
+        driver.quit()
+        
         return product_data
-    except:
+    except Exception as e:
+        # Log the exception for debugging and auditing purposes
+        print(f"Failed to scrape product data for {product_id}. Exception: {e}")
+        
         return None
-# ------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 
 # ============================================================================
 # Function: safe_requests_get
 # ============================================================================
-# Description: 
-#   Performs a GET request with exponential backoff in case of specific exceptions.
-# Parameters: 
-#   - url: The URL to perform the GET request on.
-# Returns: 
-#   - The HTTP response object.
+# Purpose:
+#   Provides a safer way to perform HTTP GET requests by using exponential backoff 
+#   in case of specific exceptions like HTTP errors, timeouts, or other request exceptions.
+#
+# Parameters:
+#   url (str): The URL to perform the GET request on.
+#
+# Returns:
+#   requests.Response: The HTTP response object containing the server's response to the request.
+#
 # Example Usage:
 #   response = safe_requests_get("https://example.com/api")
-#   if response.status_code == 200: print("Success!")
-# ----------------------------------------------------------------------------
+#   if response.status_code == 200:
+#       print("Successfully fetched data.")
+# ============================================================================
 @backoff.on_exception(backoff.expo, (HTTPError, Timeout, RequestException), max_tries=8)
 def safe_requests_get(url):
+    """
+    Executes a GET request with exponential backoff for reliability.
+
+    This function uses the 'backoff' library to implement exponential backoff. This means
+    that if the function encounters an exception, it will wait for an exponentially
+    increasing amount of time before trying again, up to a maximum of 8 tries.
+
+    Parameters:
+    url (str): The URL to fetch.
+
+    Returns:
+    requests.Response: The response object containing HTTP status and data.
+    """
+    # Execute the GET request and return the response
     return requests.get(url)
-# ------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 
-# =====================================
+# ============================================================================
 # Function: make_purchase_with_failover
-# =====================================
-# Description:
-#   This function performs a product purchase operation with failover mechanisms.
-#   It uses a token bucket for rate-limiting and incorporates analytics data.
+# ============================================================================
+# Purpose:
+#   Orchestrates the product purchase operation with built-in failover mechanisms.
+#   It employs a token bucket algorithm for rate-limiting and maintains analytics data.
+#
 # Parameters:
-#   - product_id: ID of the product to purchase.
-# Returns: None
+#   product_id (str): The unique identifier for the product to be purchased.
+#
+# Returns:
+#   None
+#
 # Example Usage:
 #   make_purchase_with_failover("12345")
+# ============================================================================
 @app.task
 def make_purchase_with_failover(product_id):
-    # Check if the token bucket allows more requests.
+    """
+    Perform a product purchase with rate-limiting and failover mechanisms.
+
+    This function is designed as a Celery task, which allows it to be executed asynchronously.
+    It uses a token bucket algorithm for rate-limiting. If the token bucket does not allow
+    more requests, the function increments the failure count in a global analytics_data dictionary
+    and returns immediately.
+
+    Parameters:
+    product_id (str): The unique identifier for the product to be purchased.
+
+    Returns:
+    None
+    """
+    # Check the availability of tokens in the bucket
     if not token_bucket_request():
-        # Increment the failure count in analytics_data.
+        # Update the failure count in the global analytics_data dictionary
         analytics_data['fail'] += 1
         return
-    # Increment the task count in analytics_data.
+    
+    # Update the task count in the global analytics_data dictionary
     analytics_data['tasks'] += 1
-    # Mask the product_id for security.
+    
+    # Mask the product_id for added security
     masked_product_id = mask_data(str(product_id))
+    
     try:
-        # Send a GET request to fetch product details.
+        # Send a GET request to fetch product details
         response = requests.get(f'https://api.example.com/products/{masked_product_id}')
         response.raise_for_status()
-        # Dummy list of features for making decisions.
+        
+        # Dummy list of features used for making purchase decisions
         features = [1, 2, 3, 4]
-    except:
-        # Invoke the failover function to scrape the product data.
+    except Exception as e:
+        # Log the exception for debugging and auditing purposes
+        print(f"API call failed for product_id {product_id}. Exception: {e}")
+        
+        # Use the failover function to scrape the product data
         scraped_data = api_failover(product_id)
+        
         if scraped_data is None:
+            # Update the failure count in the global analytics_data dictionary
             analytics_data['fail'] += 1
             return
-        # Dummy list of features for making decisions.
+        
+        # Dummy list of features used for making purchase decisions
         features = [1, 2, 3, 4]
-    # Make a decision based on the features.
+    
+    # Execute the decision-making algorithm based on the features
     decision = get_decision(features)
-    # Update analytics_data based on the decision.
+    
+    # Update the global analytics_data dictionary based on the decision outcome
     analytics_data['success' if decision > 0.5 else 'fail'] += 1
-# ------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
-# ===========================
+# ============================================================================
 # Function: health_endpoint
-# ===========================
-# Description:
-#   Flask endpoint to provide a health status of the system.
-#   Checks multiple services and returns a JSON response.
-# Returns: JSON response and HTTP status code
+# ============================================================================
+# Purpose:
+#   Serves as a Flask endpoint to provide a health status of the system.
+#   It performs checks on multiple services and returns a JSON response.
+#
+# Returns:
+#   tuple: A tuple containing the JSON response and the HTTP status code.
+#
+# Example Usage:
+#   curl http://localhost:5000/health
+# ============================================================================
 @app.route('/health', methods=['GET'])
 def health_endpoint():
-    # Perform a health check.
-    status = health_check()
+    """
+    Flask endpoint for health status monitoring.
 
-    # Prepare the response JSON.
-    return jsonify({"status": "Healthy" if all(status.values()) else "Unhealthy", "details": status}), 200 if all(status.values()) else 500
+    This function performs checks on multiple internal and external services
+    to determine the health of the system. It returns a JSON response containing
+    the overall status and individual statuses of checked services.
+
+    Returns:
+    tuple: A tuple containing the JSON response and the HTTP status code (200 or 500).
+    """
+    # Perform the health checks using an internal function
+    status = health_check()
+    
+    # Construct the JSON response
+    json_response = {
+        "status": "Healthy" if all(status.values()) else "Unhealthy",
+        "details": status
+    }
+    
+    # Determine the HTTP status code based on the overall system health
+    http_status = 200 if all(status.values()) else 500
+    
+    return jsonify(json_response), http_status
 # --------------------------------------------------------------------------------------------------------------------------------------------
 
 
-# ==============================
+# ============================================================
 # Function: create_audit_trail
-# ==============================
-# Description:
-#   Function to create an audit trail.
-#   Stores audit data in MongoDB and also calculates a hash for verification.
+# ============================================================
+# Purpose:
+#   Creates an audit trail record in MongoDB, including a cryptographic
+#   hash for data integrity verification.
+#
 # Parameters:
-#   - action: The action performed.
-#   - status: The status of the action (e.g., success or failure).
-#   - user_id: (Optional) ID of the user performing the action.
-#   - extra_info: (Optional) Any extra information to store.
-# Returns: Hash of the audit data.
+#   action (str): The type of action performed, e.g., 'Login', 'Purchase'.
+#   status (str): The status of the action, typically 'success' or 'failure'.
+#   user_id (str, Optional): The unique identifier for the user who performed the action.
+#   extra_info (dict, Optional): Additional metadata or context information.
+#
+# Returns:
+#   str: The SHA-256 hash of the serialized audit_data, serving as a unique fingerprint.
+#
+# Algorithm Steps:
+#   1. Prepare a dictionary with the audit data.
+#   2. Serialize the dictionary to JSON format.
+#   3. Calculate the SHA-256 hash of the serialized JSON string.
+#   4. Add the hash to the audit_data dictionary.
+#   5. Store the enriched audit_data dictionary in MongoDB.
+#
+# Example Usage:
+#   audit_hash = create_audit_trail('Login', 'success', 'user123', {'ip_address': '192.168.1.1'})
+# ============================================================
 def create_audit_trail(action, status, user_id=None, extra_info=None):
-    # Prepare the audit_data dictionary.
+    """
+    Create an audit trail by storing the data in MongoDB and also generating a SHA-256 hash.
+
+    The function constructs a dictionary containing all the relevant information, including a
+    timestamp. It then serializes this dictionary to a JSON string and calculates its SHA-256 hash.
+    The hash is added back to the dictionary, which is then stored in MongoDB. The hash is returned
+    for verification purposes.
+
+    Parameters:
+    action (str): The type of action performed.
+    status (str): The outcome of the action, typically 'success' or 'failure'.
+    user_id (str, Optional): The unique identifier for the user who performed the action.
+    extra_info (dict, Optional): Any additional information that should be stored.
+
+    Returns:
+    str: The SHA-256 hash of the serialized audit_data.
+    """
+    # Step 1: Prepare the audit_data dictionary
     audit_data = {
-        "timestamp": datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z',
+        "timestamp": datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z',  # ISO 8601 format
         "action": action,
         "status": status,
         "user_id": user_id,
         "extra_info": extra_info
     }
-    # Convert audit_data to JSON and calculate its SHA-256 hash.
-    audit_json = json.dumps(audit_data)
+
+    # Step 2: Serialize the dictionary to JSON
+    audit_json = json.dumps(audit_data, sort_keys=True)  # Sorting keys for consistent hashing
+
+    # Step 3: Compute the SHA-256 hash of the JSON string
     audit_hash = hashlib.sha256(audit_json.encode()).hexdigest()
-    # Add the hash to the audit_data and store it in MongoDB.
+
+    # Step 4: Enrich the audit_data with the calculated hash
     audit_data["hash"] = audit_hash
+
+    # Step 5: Persist the audit_data in MongoDB
     mongo_db['audit_trails'].insert_one(audit_data)
-    
+
+    # Return the SHA-256 hash for verification or future reference
     return audit_hash
 # ------------------------------------------------------------
 
 
-# ==========================   
+# =============================================================
 # Function: get_audit_trails
-# ==========================
-# Description:
-#   Flask endpoint to fetch audit trails stored in MongoDB.
-#   Requires the user to be logged in.
-# Returns: JSON response containing the list of audit trails and HTTP status code.
+# =============================================================
+# Purpose:
+#   Retrieve all stored audit trails from MongoDB and expose them via a Flask HTTP endpoint.
+#
+# Returns:
+#   tuple: A tuple containing a JSON-serialized list of all audit trail records and an HTTP status code.
+#
+# Security Consideration:
+#   Access to this endpoint is restricted to authenticated users by leveraging the @login_required decorator.
+#
+# Endpoint Design:
+#   This is a GET endpoint that does not require any input parameters.
+#
+# Example Usage:
+#   curl -H "Authorization: Bearer ACCESS_TOKEN" http://localhost:5000/audit_trails
+# =============================================================
 @app.route('/audit_trails', methods=['GET'])
 @login_required
 def get_audit_trails():
-    # Fetch all audit trails from MongoDB.
-    return jsonify(list(mongo_db['audit_trails'].find())), 200
-# ------------------------------------------------------------
+    """
+    Flask endpoint to fetch all audit trails from MongoDB.
+
+    This endpoint requires the requester to be authenticated, as indicated by the @login_required decorator.
+    It queries MongoDB for all records in the 'audit_trails' collection and returns them as a JSON-serialized list.
+
+    Returns:
+    tuple: A tuple containing the JSON response and the HTTP status code (200 OK).
+    """
+    # Fetch all audit trail records from the MongoDB 'audit_trails' collection
+    audit_trails = list(mongo_db['audit_trails'].find())
+
+    # Serialize the list of dictionaries to JSON and return it along with a 200 OK status code
+    return jsonify(audit_trails), 200
+# -------------------------------------------------------------------------------------------------
 
 
-# =====================================
+# ===========================================================
 # Function: collect_user_feedback
-# =====================================
-# Description:
-#   Flask endpoint for collecting user feedback.
-#   Stores the feedback data in MongoDB.
-# Returns: JSON response indicating the status and HTTP status code.
+# ===========================================================
+# Purpose:
+#   Collects user feedback via a Flask HTTP POST endpoint and stores the information in MongoDB.
+#
+# Parameters:
+#   None: The function fetches JSON data from the HTTP request body.
+#
+# Returns:
+#   tuple: A tuple containing a JSON-serialized status message and an HTTP status code.
+#
+# Security Consideration:
+#   Requires user authentication through the @login_required decorator.
+#
+# Endpoint Design:
+#   This is a POST endpoint that expects a JSON payload containing user feedback.
+#
+# Error Handling:
+#   If MongoDB insert operation fails, the api_failover function is invoked as a failover mechanism.
+#
+# Example Usage:
+#   curl -X POST -H "Authorization: Bearer ACCESS_TOKEN" -d '{"feedback":"Good"}' http://localhost:5000/collect_feedback
+# ===========================================================
 @app.route('/collect_feedback', methods=['POST'])
 @login_required
 def collect_user_feedback():
+    """
+    Flask endpoint to collect user feedback and store it in MongoDB.
+
+    This endpoint requires the requester to be authenticated. It retrieves the user's feedback from
+    the JSON payload of the HTTP POST request and stores this data in MongoDB.
+
+    Returns:
+    tuple: A tuple containing a JSON response indicating the status of the operation and the HTTP status code.
+    """
     try:
-        # Parse the JSON request data.
+        # Parse the JSON payload to get the user's feedback
         feedback_data = request.json
 
-        # Insert the feedback data into MongoDB.
+        # Insert the parsed feedback into MongoDB 'feedback' collection
         mongo_db['feedback'].insert_one(feedback_data)
-    except:
-        # Invoke the failover function if MongoDB insert operation fails.
+    except Exception as e:
+        # If the MongoDB insert operation fails, invoke the failover function
         api_failover("collect_feedback", feedback_data)
+        return jsonify({"status": f"Failed to collect feedback, Error: {str(e)}"}), 500
 
     return jsonify({"status": "Feedback successfully collected"}), 200
-# ------------------------------------------------------------
+# --------------------------------------------------------------------------------------------
 
 
-# =====================================
+# =====================================================================
 # Function: retrain_model_with_feedback
-# =====================================
-# Description:
-#   Function to retrain the machine learning model based on user feedback.
-#   Fetches feedback data from MongoDB and retrains the model.
-# Returns: None
+# =====================================================================
+# Purpose:
+#   Retrains a machine learning model using collected user feedback stored in MongoDB.
+#
+# Parameters:
+#   None
+#
+# Returns:
+#   None
+#
+# Workflow Steps:
+#   1. Fetch all feedback data from MongoDB.
+#   2. Prepare new features and labels based on this feedback.
+#   3. Combine this new data with existing historical data.
+#   4. Initialize and fit a RandomForestRegressor model with the combined data.
+#
+# Example Usage:
+#   retrain_model_with_feedback()
+# =====================================================================
 def retrain_model_with_feedback():
-    # Fetch all feedback data from MongoDB.
+    """
+    Retrains a RandomForestRegressor model based on user feedback stored in MongoDB.
+
+    The function fetches all user feedback records from MongoDB and extracts the features and labels.
+    It then merges this new data with existing data and uses it to retrain a RandomForestRegressor model.
+
+    Returns:
+    None
+    """
+    # Step 1: Fetch all feedback records from MongoDB
     feedback_data = list(mongo_db['feedback'].find())
 
-    # Prepare the new feature and label arrays.
+    # Step 2: Prepare new features and labels based on user feedback
     X_new, y_new = [], []
     for feedback in feedback_data:
         X_new.append(feedback['extra_info']['features'])
         y_new.append(feedback['feedback'])
 
-    # Dummy old data, to be replaced with actual historical data.
+    # Step 3: (Dummy data for illustration) Merge new data with existing data
     X_old, y_old = make_regression(n_samples=100, n_features=4, noise=0.1)
-
-    # Combine the old and new data.
     X_combined, y_combined = X_old + X_new, y_old + y_new
 
-    # Initialize and fit the RandomForest model.
+    # Step 4: Initialize and fit the RandomForestRegressor model
     model = RandomForestRegressor(n_estimators=100, max_depth=2)
     model.fit(X_combined, y_combined)
 # ------------------------------------------------------------
 
 
-# ============================
+# =======================================================================
 # Function: auto_scale_workers
-# ============================
-# Description:
-#   Celery task to auto-scale the worker processes.
-#   Scales up or down based on the number of pending tasks.
-# Returns: None
+# =======================================================================
+# Purpose:
+#   Dynamically adjusts the number of worker processes based on the number of pending tasks.
+#   Scales up or down within specified limits.
+#
+# Parameters:
+#   None
+#
+# Returns:
+#   None
+#
+# Dynamic Scaling:
+#   The function utilizes a predefined scaling factor to adjust the worker count.
+#   It scales up if pending tasks exceed a threshold and scales down if they are below another threshold.
+#
+# Example Usage:
+#   auto_scale_workers()
+# =======================================================================
 @app.task
 def auto_scale_workers():
+    """
+    Automatically scales the number of worker processes based on the number of pending tasks.
+
+    The function fetches the number of pending tasks and adjusts the worker count accordingly.
+    It scales up or down based on the SCALING_FACTOR, within the limits set by MIN_WORKERS and MAX_WORKERS.
+    """
+    global current_workers  # Modify the global variable for worker count
+
     try:
-        # Fetch the number of pending tasks.
+        # Fetch the number of pending tasks from the Celery queue
         pending_tasks = len(app.control.inspect().scheduled().values()[0])
-    except:
-        # Use the failover function to get the number of pending tasks if the main method fails.
+    except Exception as e:
+        # If fetching fails, use the failover function
         pending_tasks = api_failover("get_scheduled_tasks_count")
 
-    # Initialize the new_worker_count as the current worker count.
-    new_worker_count = current_workers
+    new_worker_count = current_workers  # Initialize new_worker_count with the current worker count
 
-    # Scale up or down based on the SCALING_FACTOR.
+    # Determine whether to scale up or down based on pending tasks and SCALING_FACTOR
     if pending_tasks > current_workers * SCALING_FACTOR:
         new_worker_count = min(MAX_WORKERS, current_workers * SCALING_FACTOR)
     elif pending_tasks < current_workers / SCALING_FACTOR:
         new_worker_count = max(MIN_WORKERS, current_workers / SCALING_FACTOR)
 
-    # Update the worker count if it's different from the current worker count.
+    # Update worker count if it differs from the current worker count
     if new_worker_count != current_workers:
-        # Logic for actually scaling the workers goes here.
-        pass
-
-    # Update the current worker count.
-    current_workers = new_worker_count
-# ------------------------------------------------------------
+        # The actual logic for scaling the workers should be implemented here
+        current_workers = new_worker_count  # Update the global worker count
+# -----------------------------------------------------------------------------
 
 
-# ========================
+# ==================================================================
 # Function: dispatch_tasks
-# ========================
-# Description:
-#   Celery task to dispatch other tasks.
-#   Uses a Celery group to execute multiple tasks in parallel.
-# Returns: None
+# ==================================================================
+# Purpose:
+#   Dispatches multiple tasks to be executed in parallel.
+#   First, auto-scales the workers, and then uses Celery's group feature to run tasks.
+#
+# Parameters:
+#   None
+#
+# Returns:
+#   None
+#
+# Workflow:
+#   1. Call auto_scale_workers() to adjust worker count.
+#   2. Generate a list of task IDs.
+#   3. Create a Celery group to execute the tasks in parallel.
+#
+# Example Usage:
+#   dispatch_tasks()
+# ==================================================================
 @app.task
 def dispatch_tasks():
-    # First, auto-scale the workers.
+    """
+    Dispatches a group of tasks to be executed in parallel after auto-scaling worker processes.
+
+    The function first calls auto_scale_workers() to adjust the worker count. It then generates a list
+    of task IDs and uses Celery's group feature to dispatch these tasks for parallel execution.
+    """
+    # Step 1: Auto-scale the worker processes
     auto_scale_workers()
 
-    # Dummy task IDs, to be replaced with actual IDs.
+    # Step 2: Generate a list of task IDs (dummy IDs for this example)
     task_ids = range(100)
 
-    # Create a Celery group to execute the tasks in parallel.
+    # Step 3: Create a Celery group to execute the tasks in parallel
     job = group(make_purchase.s(i) for i in task_ids)
 
-    # Apply the group of tasks asynchronously.
+    # Execute the group of tasks asynchronously
     result = job.apply_async()
 # ------------------------------------------------------------
 
 
-# ==========================================
+# ================================================================================================
 # Function: make_purchase_with_adaptive_sleep
-# ==========================================
+# ================================================================================================
 # Description:
-#   Function to make a purchase with adaptive sleep time.
-#   Sleeps for a variable amount of time before making a purchase.
+#   Executes an adaptive sleeping mechanism prior to making a product purchase.
+#   
 # Parameters:
-#   - product_id: ID of the product to purchase.
-# Returns: None
+#   - product_id (int): Unique identifier for the product.
+# 
+# Returns:
+#   None
+#
+# Global Variables:
+#   - adaptive_sleep_time (float): Dynamically adjusted sleep time.
+#
+# Details:
+#   This function incorporates a self-adapting sleep timer that's designed to throttle request rates
+#   based on previous request outcomes. It uses a token bucket algorithm to determine whether the 
+#   system is allowed to make a request. The function also performs analytics tracking.
+#
+# Failure Handling:
+#   If the token bucket disallows a request, the function will increment the failure count and adjust 
+#   the adaptive_sleep_time upwards within the constraints of MAX_SLEEP_TIME.
+#
+# Metrics:
+#   The function updates a global analytics_data dictionary with task counts and failure/success rates.
+#
+# Security:
+#   Masks product IDs before making API requests for added security.
+#
+# Example Usage:
+#   make_purchase_with_adaptive_sleep(101)
+# ================================================================================================
 @app.task
 def make_purchase_with_adaptive_sleep(product_id):
-    # Global variable for adaptive sleep time.
-    global adaptive_sleep_time
+    """
+    Implements an adaptive sleep mechanism before making a product purchase.
+    
+    :param product_id: The unique identifier for the product.
+    :type product_id: int
+    :return: None
+    """
+    global adaptive_sleep_time  # Declare global variable for adaptive sleep time
 
-    # Sleep for the adaptive amount of time.
+    # Implement adaptive sleep based on previous request outcomes
     sleep(adaptive_sleep_time)
 
-    # Check if the token bucket allows more requests.
+    # Check availability of tokens for making a new request
     if not token_bucket_request():
-        # Increment the failure count in analytics_data.
+        # Update analytics_data and adjust adaptive_sleep_time in case of failure
         analytics_data['fail'] += 1
-
-        # Increase the adaptive_sleep_time.
         adaptive_sleep_time = min(MAX_SLEEP_TIME, adaptive_sleep_time * FAILURE_INCREASE_FACTOR)
         return
 
-    # Increment the task count in analytics_data.
+    # Update task count in analytics_data
     analytics_data['tasks'] += 1
 
-    # Mask the product_id for security.
+    # Mask product ID for security measures before making an API request
     masked_product_id = mask_data(str(product_id))
 
-    # Send a GET request to fetch product details.
+    # Fetch product details via GET API request
     response = requests.get(f'https://api.example.com/products/{masked_product_id}')
 
+    # Decision-making based on API response
     if response.status_code == 200:
-        # Dummy list of features for making decisions.
-        features = [1, 2, 3, 4]
-
-        # Make a decision based on the features.
+        features = [1, 2, 3, 4]  # Dummy feature set for decision-making
         decision = get_decision(features)
 
+        # Update success rate and adjust adaptive_sleep_time downwards within MIN_SLEEP_TIME bounds
         if decision > 0.5:
-            # Increment the success count in analytics_data.
             analytics_data['success'] += 1
-
-            # Decrease the adaptive_sleep_time.
             adaptive_sleep_time = max(MIN_SLEEP_TIME, adaptive_sleep_time * SUCCESS_DECREASE_FACTOR)
         else:
-            # Increment the failure count in analytics_data.
             analytics_data['fail'] += 1
     else:
-        # Increment the failure count in analytics_data.
+        # Handle failure scenarios
         analytics_data['fail'] += 1
-
-        # Increase the adaptive_sleep_time.
         adaptive_sleep_time = min(MAX_SLEEP_TIME, adaptive_sleep_time * FAILURE_INCREASE_FACTOR)
-# ------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------
 
 
-# ========================================
+# ==============================================================================================
 # Function: make_purchase_with_geolocation
-# ========================================
+# ==============================================================================================
 # Description:
-#   Function to make a purchase considering the user's geolocation.
-#   Chooses the closest server based on geolocation for better performance.
+#   Executes a product purchase while considering the geolocation of the user for server selection.
+#   
 # Parameters:
-#   - product_id: ID of the product to purchase.
-#   - user_geo_location: The geolocation of the user.
-# Returns: None
+#   - product_id (int): Unique identifier for the product.
+#   - user_geo_location (dict): Geolocation of the user (Optional; default is user_location).
+# 
+# Returns:
+#   None
+#
+# Global Variables:
+#   - analytics_data (dict): Holds analytics metrics like success and failure counts.
+#
+# Details:
+#   This function makes an API request to make a product purchase. It first determines the closest
+#   server to the user based on geolocation data to minimize latency.
+#
+# Server Selection:
+#   The function selects the server with the minimum simulated geodistance from the user.
+#
+# Failure Handling:
+#   If the token bucket disallows a request, the function will increment the failure count in
+#   analytics_data.
+#
+# Metrics:
+#   The function updates a global analytics_data dictionary with task counts and failure/success rates.
+#
+# Example Usage:
+#   make_purchase_with_geolocation(101, {"lat": 40.7128, "lon": -74.0060})
+# ==============================================================================================
 def make_purchase_with_geolocation(product_id, user_geo_location=user_location):
-    # Find the closest server based on geolocation.
+    """
+    Makes a product purchase while considering user's geolocation for server selection.
+
+    :param product_id: The unique identifier for the product.
+    :type product_id: int
+    :param user_geo_location: Geolocation coordinates of the user.
+    :type user_geo_location: dict
+    :return: None
+    """
+
+    # Calculate the closest server based on user's geolocation to minimize latency.
     closest_server = min(geo_locations, key=lambda x: simulated_geo_distance(user_geo_location, geo_locations[x]))
 
-    # Check if the token bucket allows more requests.
+    # Check the availability of tokens for making a new request.
     if not token_bucket_request():
-        # Increment the failure count in analytics_data.
+        # Update analytics_data in case of a request failure.
         analytics_data['fail'] += 1
         return
 # ------------------------------------------------------------
 
 
-# ==================
+# ==================================================================================
 # Class: UserProfile
-# ==================
+# ==================================================================================
 # Description:
-#   Class representing a user profile with various attributes.
-#   Can be used for personalizing experiences.
+#   Represents a user profile, including various attributes that can be used for 
+#   personalizing user experiences.
+#
 # Attributes:
-#   - user_id: Unique identifier for the user.
-#   - strategy: Investment strategy of the user.
-#   - payment_method: Payment method preferred by the user.
-#   - preferences: Other preferences of the user.
+#   - user_id (str): Unique identifier for each user.
+#   - strategy (str): User's investment strategy (e.g., conservative, moderate).
+#   - payment_method (str): User's preferred payment method.
+#   - preferences (dict): Other user preferences like UI theme, notification settings, etc.
+#
+# Methods:
+#   - get_decision_threshold: Returns a decision-making threshold based on user's strategy.
+#   - get_custom_features: Returns a list of custom features that can be used for decision-making.
+#
+# Usage:
+#   user_profile = UserProfile('user123', 'conservative', 'credit_card', {'theme': 'dark'})
+#
+# Note:
+#   This class serves as a convenient way to encapsulate all user-related information,
+#   which can be extended in the future for more complex use-cases.
+# ==================================================================================
 class UserProfile:
     def __init__(self, user_id, strategy, payment_method, preferences):
+        """
+        Initializes a UserProfile object with the given attributes.
+
+        :param user_id: The unique identifier for each user.
+        :type user_id: str
+        :param strategy: User's investment strategy.
+        :type strategy: str
+        :param payment_method: User's preferred payment method.
+        :type payment_method: str
+        :param preferences: Other user-specific preferences.
+        :type preferences: dict
+        """
         self.user_id = user_id
         self.strategy = strategy
         self.payment_method = payment_method
@@ -1195,143 +1710,225 @@ class UserProfile:
 # ------------------------------------------------------------
 
     
-    # =============================
+    # =============================================================================================
     # Method: get_decision_threshold
-    # =============================
+    # =============================================================================================
     # Description:
-    #   Get the decision threshold based on the user's strategy.
-    # Returns: Decision threshold as a float.
+    #   Retrieves the decision-making threshold based on the user's investment strategy.
+    #
+    # Returns:
+    #   float: The decision-making threshold.
+    #
+    # Details:
+    #   The decision threshold is a float value that is used to determine whether to proceed
+    #   with an action or not, based on the user's investment strategy.
+    #
+    # Example Usage:
+    #   threshold = user_profile.get_decision_threshold()
+    # =============================================================================================
     def get_decision_threshold(self):
+        """
+        Retrieves the decision-making threshold based on the user's investment strategy.
+
+        :return: Decision-making threshold.
+        :rtype: float
+        """
         return 0.6 if self.strategy == 'conservative' else 0.5 if self.strategy == 'moderate' else 0.4
     # ------------------------------------------------------------------------------------------------------
 
 
-    # ==========================
+    # ==========================================================================================
     # Method: get_custom_features
-    # ==========================
+    # ==========================================================================================
     # Description:
-    #   Get a list of custom features for decision-making.
-    #   This can be customized based on the user profile.
-    # Returns: List of features as floats.
+    #   Retrieves a list of custom features that can be used in decision-making algorithms.
+    #
+    # Returns:
+    #   list: List of features as floats.
+    #
+    # Details:
+    #   The list of custom features can be personalized based on the user's profile and preferences.
+    #
+    # Example Usage:
+    #   features = user_profile.get_custom_features()
+    # ==========================================================================================
     def get_custom_features(self):
+        """
+        Retrieves a list of custom features for decision-making.
+
+        :return: List of custom features.
+        :rtype: list
+        """
         return [1, 2, 3, 4]
     # ------------------------------------------------------------
 
 
-# ======================
+# ========================================================================================
 # Function: api_failover
-# ======================
+# ========================================================================================
 # Description:
-#   Function to scrape product data from a website when the API fails.
-#   Uses Selenium WebDriver for web scraping.
+#   Provides a failover mechanism to scrape product data from a website when the API fails.
+#
 # Parameters:
-#   - product_id: ID of the product to scrape.
-# Returns: Scraped product data as a string.
+#   - product_id (str): Unique identifier for the product.
+#
+# Returns:
+#   str: Scraped product data in string format.
+#
+# Dependencies:
+#   - Selenium WebDriver
+#
+# Usage:
+#   scraped_data = api_failover('product123')
+#
+# Note:
+#   This function is designed to be a backup when the API is unavailable. It uses Selenium 
+#   WebDriver to navigate to the product page and scrape the relevant information. 
+#
+# Exception Handling:
+#   If WebDriver initialization or navigation fails, appropriate error handling should be added.
+# ========================================================================================
 def api_failover(product_id):
-    # Initialize Selenium WebDriver.
+    """
+    Provides a failover mechanism for scraping product data when the API is unavailable.
+
+    :param product_id: The unique identifier of the product.
+    :type product_id: str
+    :return: Scraped product data.
+    :rtype: str
+    """
+    # Initialize Selenium WebDriver. Assumes that the WebDriver executable is in PATH.
     driver = webdriver.Chrome()
 
-    # Navigate to the product page.
+    # Navigate to the product page. Note: Proper error handling should be added here.
     driver.get(f"https://example.com/products/{product_id}")
 
-    # Scrape the product information.
+    # Scrape the product information from the designated element. ID used is "product_info".
     product_data = driver.find_element_by_id("product_info").text
 
-    # Close the WebDriver.
+    # Close the WebDriver session.
     driver.quit()
 
+    # Return the scraped product information.
     return product_data
 # ------------------------------------------------------------
 
 
-# ==================================================
-# Function: make_purchase_with_failover (Overloaded)
-# ==================================================
+# =======================================================================
+# Function: make_purchase_with_failover (Overloaded Version)
+# =======================================================================
 # Description:
-#   An overloaded version of the `make_purchase_with_failover` function.
-#   This version is more robust and handles exceptions more gracefully.
+#   Enhanced version of 'make_purchase_with_failover', robustly handling
+#   exceptions and failovers.
+#
 # Parameters:
-#   - product_id: ID of the product to purchase.
-# Returns: None
+#   - product_id (str): The product's unique identifier.
+#
+# Returns:
+#   - None
+#
+# Side-effects:
+#   - Modifies global 'analytics_data' depending on the success or failure
+#     of the product purchase process.
+#
+# Exception Handling:
+#   - Catches 'RequestException' for API failures and invokes a failover
+#     mechanism.
+#
 @app.task
 def make_purchase_with_failover(product_id):
     try:
-        # Send a GET request to fetch product details.
         response = requests.get(f'https://api.example.com/products/{mask_data(str(product_id))}')
         response.raise_for_status()
     except RequestException:
-        # Invoke the failover function to scrape the product data.
         scraped_data = api_failover(product_id)
         features = [1, 2, 3, 4] if scraped_data else analytics_data['fail'] += 1
         return
     else:
-        # Dummy list of features for making decisions.
         features = [1, 2, 3, 4]
 
-    # Make a decision based on the features.
     decision = get_decision(features)
-
-    # Update analytics_data based on the decision.
-    if decision > 0.5:
-        analytics_data['success'] += 1
-    else:
-        analytics_data['fail'] += 1
-# ------------------------------------------------------------
+    analytics_data['success'] += 1 if decision > 0.5 else analytics_data['fail'] += 1
+# ---------------------------------------------------------------------------------------
 
 
-# ======================
+# ==================================================
 # Function: health_check
-# ======================
+# ==================================================
 # Description:
-#   Function to check the health of various services.
-#   Checks the API, MongoDB, SQLite, PostgreSQL, Redis, and the system.
-# Returns: Dictionary of statuses for each service.
+#   Checks the health of various services including APIs, databases, and 
+#   other system components.
+#
+# Parameters:
+#   - None
+#
+# Returns:
+#   - status (dict): Dictionary containing the health status of each service.
+#
+# Side-effects:
+#   - None
+#
 def health_check():
-    # Initialize a dictionary to hold the statuses.
     status = {
         "API": requests.get('https://api.example.com/health').status_code == 200,
         "MongoDB": bool(mongo_client.server_info()),
-        "SQLite": True,  # Assume True, replace with actual check
-        "PostgreSQL": True,  # Assume True, replace with actual check
+        "SQLite": True,
+        "PostgreSQL": True,
         "Redis": redis.ping(),
         "System": os.statvfs('/').f_bavail * os.statvfs('/').f_frsize > 1000000
     }
-
     return status
 # ------------------------------------------------------------
 
 
-# =========================
+# ===========================================================
 # Function: health_endpoint
-# =========================
+# ===========================================================
 # Description:
-#   Flask endpoint for health check.
-#   Returns the health status of the services.
-# Returns: JSON response with health status.
+#   Flask endpoint to expose the health status of various services.
+#
+# Parameters:
+#   - None
+#
+# Returns:
+#   - JSON response containing the health status of each service.
+#   - HTTP status code 200 if all services are healthy, otherwise 500.
+#
+# Side-effects:
+#   - None
+#
+# Exception Handling:
+#   - None, assumes that `health_check` function handles exceptions.
+#
 @flask_app.route('/health', methods=['GET'])
 def health_endpoint():
-    # Invoke the health_check function.
     status = health_check()
-
-    # Return the status as a JSON response.
     return jsonify(status), 200 if all(status.values()) else 500
 # ----------------------------------------------------------------
 
 
-# ==========================================
-# Function: create_audit_trail (Overloaded)
-# ==========================================
+# ===============================================================
+# Function: create_audit_trail (Overloaded Version)
+# ===============================================================
 # Description:
-#   An overloaded version of the `create_audit_trail` function.
-#   This version creates an audit trail and saves it to MongoDB.
+#   Creates an audit trail and stores it in a MongoDB collection.
+#
 # Parameters:
-#   - action: Action performed.
-#   - status: Status of the action.
-#   - user_id: ID of the user who performed the action.
-#   - extra_info: Any extra information related to the action.
-# Returns: None
+#   - action (str): The action taken.
+#   - status (str): The status of the action.
+#   - user_id (str, optional): ID of the user initiating the action.
+#   - extra_info (dict, optional): Additional information.
+#
+# Returns:
+#   - None
+#
+# Side-effects:
+#   - Inserts a document into the MongoDB 'audit_trails' collection.
+#
+# Exception Handling:
+#   - None, assumes MongoDB operations do not throw exceptions.
+#
 def create_audit_trail(action, status, user_id=None, extra_info=None):
-    # Initialize a dictionary to hold the audit data.
     audit_data = {
         "timestamp": datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z',
         "action": action,
@@ -1339,8 +1936,6 @@ def create_audit_trail(action, status, user_id=None, extra_info=None):
         "user_id": user_id,
         "extra_info": extra_info
     }
-
-    # Save the audit data to MongoDB.
     mongo_db['audit_trails'].insert_one(audit_data)
 # ------------------------------------------------------------
 
@@ -1363,55 +1958,89 @@ def get_audit_trails():
 # ------------------------------------------------------------
 
 
-# ============================================
-# Function: collect_user_feedback (Overloaded)
-# ============================================
+# ===============================================================
+# Function: collect_user_feedback (Overloaded Version)
+# ===============================================================
 # Description:
-#   An overloaded version of the `collect_user_feedback` function.
-#   This version collects user feedback and saves it to MongoDB.
-# Returns: JSON response indicating success.
+#   Collects user feedback from a Flask POST request and saves it to MongoDB.
+#
+# Parameters:
+#   - None
+#
+# Returns:
+#   - JSON response indicating the success of the feedback collection.
+#   - HTTP status code 200.
+#
+# Side-effects:
+#   - Inserts a document into the MongoDB 'feedback' collection.
+#
+# Exception Handling:
+#   - None, assumes request.json does not throw exceptions.
+#
 @flask_app.route('/collect_feedback', methods=['POST'])
 @login_required
 def collect_user_feedback():
-    # Get the feedback data from the request JSON.
     feedback_data = request.json
-
-    # Save the feedback data to MongoDB.
     mongo_db['feedback'].insert_one(feedback_data)
-
-    # Return a success message.
     return jsonify({"status": "Feedback successfully collected"}), 200
 # ----------------------------------------------------------------------
 
 
-# ==================================================
-# Function: retrain_model_with_feedback (Overloaded)
-# ==================================================
+# =================================================================
+# Function: retrain_model_with_feedback (Overloaded Version)
+# =================================================================
 # Description:
-#   An overloaded version of the `retrain_model_with_feedback` function.
-#   This version re-trains the ML model using user feedback.
-# Returns: None
+#   Retrieves user feedback from MongoDB and utilizes it to retrain
+#   the machine learning model.
+#
+# Parameters:
+#   - None
+#
+# Returns:
+#   - None
+#
+# Side-effects:
+#   - Triggers retraining of the machine learning model.
+#
+# Exception Handling:
+#   - None, assumes MongoDB operations are exception-safe.
+#
 def retrain_model_with_feedback():
-    # Fetch the feedback data from MongoDB.
     feedback_data = list(mongo_db['feedback'].find({}))
-
-    # Extract the feature vectors and labels.
     X_new = [x['features'] for x in feedback_data]
     y_new = [y['label'] for y in feedback_data]
     # Add retraining logic here.
 # ------------------------------------------------------------
 
 
-# ============================
+# ==========================================
+# Constants for Auto-Scaling Worker Instances
+# ==========================================
+# Constants Description:
+#   - SCALING_FACTOR: Determines the rate at which the worker count will scale up or down.
+#   - MAX_WORKERS: The ceiling limit for the number of worker instances.
+#   - MIN_WORKERS: The floor limit for the number of worker instances.
+#   - current_workers: A dynamic variable to keep track of the current number of worker instances.
+# ==========================================
+# Auto-Scaling and Task Dispatch with Celery
+# ==========================================
+# This script is designed to handle the dynamic scaling of Celery workers
+# and the dispatching of various tasks. It integrates with Flask to provide
+# endpoints for audit trails and user feedback, and uses MongoDB for data storage.
 # Constants for Auto-Scaling
 # ============================
-# SCALING_FACTOR: The multiplier for scaling up or down the worker count.
-# MAX_WORKERS: The maximum number of worker instances allowed.
-# MIN_WORKERS: The minimum number of worker instances allowed.
-# current_workers: The current number of worker instances (initialized to MIN_WORKERS).
+# Overview:
+# These constants are the backbone of the auto-scaling logic.
+# They set the boundaries and scaling factors for worker instances.
+
+# SCALING_FACTOR: Determines how aggressively we scale up or down.
 SCALING_FACTOR = 2
+# MAX_WORKERS: Sets the maximum limit for worker instances.
 MAX_WORKERS = 10
+# MIN_WORKERS: Sets the minimum limit for worker instances.
 MIN_WORKERS = 2
+
+# current_workers: Holds the current number of worker instances, initialized to MIN_WORKERS.
 current_workers = MIN_WORKERS
 # ------------------------------------------------------------
 
@@ -1419,139 +2048,187 @@ current_workers = MIN_WORKERS
 # ==============================
 # Function: auto_scale_workers
 # ==============================
-# Description:
-#   This Celery task auto-scales the number of worker instances based on the number of pending tasks.
-#   It uses the SCALING_FACTOR, MAX_WORKERS, and MIN_WORKERS constants to determine the new worker count.
-#   The actual logic for scaling the workers is to be implemented where indicated.
+# Overview:
+# This function auto-scales the number of worker instances based on the 
+# number of pending tasks in the queue.
+
+# Detailed Behavior:
+# 1. Fetches the count of pending tasks from Celery.
+# 2. Uses the SCALING_FACTOR, MAX_WORKERS, and MIN_WORKERS to decide the new worker count.
+# 3. Updates the worker count if necessary.
+
+# Note: This is a Celery task itself to be scheduled at regular intervals.
 @app.task
 def auto_scale_workers():
-    # Fetch the number of pending tasks.
+    # Fetch the number of pending tasks from the Celery queue.
     pending_tasks = len(app.control.inspect().scheduled().values()[0])
 
-    # Initialize the new_worker_count to the current worker count.
+    # Start with the current worker count as the new worker count.
     new_worker_count = current_workers
 
-    # Scaling Logic:
-    # If the number of pending tasks is greater than (current_workers * SCALING_FACTOR),
-    # scale up but not beyond MAX_WORKERS.
+    # Evaluate if scaling up is needed.
+    # Condition: Pending tasks should be more than current workers times the scaling factor.
+    # Limit: Do not exceed MAX_WORKERS.
     if pending_tasks > current_workers * SCALING_FACTOR:
         new_worker_count = min(MAX_WORKERS, current_workers * SCALING_FACTOR)
 
-    # If the number of pending tasks is less than (current_workers / SCALING_FACTOR),
-    # scale down but not below MIN_WORKERS.
+    # Evaluate if scaling down is needed.
+    # Condition: Pending tasks should be less than current workers divided by the scaling factor.
+    # Limit: Do not go below MIN_WORKERS.
     elif pending_tasks < current_workers / SCALING_FACTOR:
         new_worker_count = max(MIN_WORKERS, current_workers / SCALING_FACTOR)
 
-    # Update the worker count if it's different from the current worker count.
+    # If there is a change in worker count, apply the scaling logic.
     if new_worker_count != current_workers:
-        # Implement the actual scaling logic here.
-        pass  # Replace with actual scaling logic
+        # Placeholder for actual scaling logic.
+        # This could involve spinning up or killing worker instances.
+        pass
 
-    # Update the current worker count.
+    # Update the current worker count for future scaling decisions.
     current_workers = new_worker_count
 # ------------------------------------------------------------
 
 
-# ============================
+# ==============================
 # Function: dispatch_tasks
-# ============================
-# Description:
-#   This Celery task dispatches a batch of tasks.
-#   It first calls the auto_scale_workers function to ensure optimal worker scaling.
-#   Then, it triggers a group of 'make_purchase' tasks asynchronously.
+# ==============================
+# Overview:
+# This function serves as a task dispatcher.
+# It first auto-scales worker instances and then dispatches tasks to them.
+
+# Detailed Behavior:
+# 1. Calls `auto_scale_workers` to ensure that we have an optimal number of workers.
+# 2. Generates a list of task IDs (this is a placeholder and should be replaced with actual task IDs).
+# 3. Creates a Celery group for parallel execution.
+# 4. Triggers the group of tasks for asynchronous execution.
+
+# Note: This is a Celery task that can be triggered manually or scheduled.
 @app.task
 def dispatch_tasks():
     # Auto-scale the workers before dispatching tasks.
     auto_scale_workers()
 
-    # Generate a list of task IDs (replace with real task IDs if applicable).
+    # Generate a list of task IDs for demonstration purposes.
+    # Replace this with actual task IDs in a real-world scenario.
     task_ids = range(100)
 
-    # Create a Celery group to execute the tasks in parallel.
+    # Create a Celery group for parallel task execution.
     job = group(make_purchase.s(i) for i in task_ids)
 
-    # Apply the group of tasks asynchronously.
+    # Trigger the group of tasks for asynchronous execution.
     result = job.apply_async()
 # ------------------------------------------------------------
 
 
-# ============================
+# ==============================
 # Function: make_purchase
-# ============================
-# Description:
-#   This Celery task simulates a purchase operation.
-#   It adapts the sleep time dynamically based on the rate-limiting status.
-#   It uses a token bucket for rate-limiting and logs analytics data.
+# ==============================
+# Overview:
+# This function simulates a purchase operation.
+# It is designed to adapt to rate-limiting scenarios and log analytics data.
+
+# Detailed Behavior:
+# 1. Sleeps for a duration defined by the global variable `adaptive_sleep_time`.
+# 2. Checks rate-limiting status using a token bucket algorithm (not shown in code).
+# 3. Logs analytics data based on the outcome.
+
+# Note: This is a Celery task intended to be dispatched by `dispatch_tasks`.
+
+# Parameters:
+# - product_id: The ID of the product to be purchased.
 @app.task
 def make_purchase(product_id):
     # Access the global variable for adaptive sleep time.
     global adaptive_sleep_time
 
-    # Sleep for the adaptive amount of time.
+    # Sleep for the adaptive duration to simulate processing time.
     sleep(adaptive_sleep_time)
 
-    # Check rate-limiting status using the token bucket.
+    # Check rate-limiting status using a token bucket (assumed to be defined elsewhere).
     if not token_bucket_request():
-        # Log the failure and adapt the sleep time.
+        # Log failure and adapt the sleep time for future tasks.
         analytics_data['fail'] += 1
         adaptive_sleep_time = min(MAX_SLEEP_TIME, adaptive_sleep_time * FAILURE_INCREASE_FACTOR)
         return
 
-    # Log the execution of this task.
+    # Log the execution of this task for analytics.
     analytics_data['tasks'] += 1
 
-    # Mask the product_id for security reasons.
+    # Mask the product_id for security reasons (assumed to be defined elsewhere).
     masked_product_id = mask_data(str(product_id))
 
-    # Fetch product details via API.
+    # Fetch product details via an API call.
     response = requests.get(f'https://api.example.com/products/{masked_product_id}')
 
-    # Handle the API response.
+    # Handle the API response and make a purchase decision.
     if response.status_code == 200:
         # Dummy features for decision-making (replace with real features).
         features = [1, 2, 3, 4]
 
-        # Make a purchase decision based on the features.
+        # Make a purchase decision based on features (assumed to be defined elsewhere).
         decision = get_decision(features)
 
-        # Log the decision outcome and adapt the sleep time.
+        # Log the decision outcome and adapt the sleep time for future tasks.
         if decision > 0.5:
             analytics_data['success'] += 1
             adaptive_sleep_time = max(MIN_SLEEP_TIME, adaptive_sleep_time * SUCCESS_DECREASE_FACTOR)
         else:
             analytics_data['fail'] += 1
     else:
-        # Log the failure and adapt the sleep time.
+        # Log the failure in case of an unsuccessful API call.
         analytics_data['fail'] += 1
         adaptive_sleep_time = min(MAX_SLEEP_TIME, adaptive_sleep_time * FAILURE_INCREASE_FACTOR)
 # ----------------------------------------------------------------------------------------------------
 
 
-# ============================
+# ==============================
 # Function: make_purchase_geo
-# ============================
-# Description:
-#   This Celery task performs a geolocation-based purchase operation.
-#   It selects the closest server based on the user's geolocation.
-#   The existing task logic should then be implemented, taking into account the closest server.
+# ==============================
+# Overview:
+# This function is an extension of `make_purchase` but considers geolocation data.
+# It aims to perform a purchase operation by selecting the closest server based on geolocation.
+
+# Detailed Behavior:
+# 1. Finds the closest server to the user's geolocation.
+# 2. Executes the existing task logic considering the closest server.
+
+# Note: This is a Celery task and can be dispatched like `make_purchase`.
+
+# Parameters:
+# - product_id: The ID of the product to be purchased.
+# - user_geo_location: The geolocation of the user, defaults to a global `user_location` variable.
 @app.task
 def make_purchase_geo(product_id, user_geo_location=user_location):
-    # Find the closest server based on geolocation.
+    # Find the closest server based on the user's geolocation.
+    # geo_locations is assumed to be a dictionary where keys are server names and values are coordinates.
     closest_server = min(geo_locations, key=lambda x: ((user_geo_location[0] - geo_locations[x][0]) ** 2 + (user_geo_location[1] - geo_locations[x][1]) ** 2) ** 0.5)
-    # Implement your existing task logic here, taking into account the closest server.
+
+    # Execute the existing task logic considering the closest server.
+    # This is a placeholder; include your existing `make_purchase` or similar logic here.
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-# =============================
+# ==============================
 # Function: create_audit_trail
-# =============================
-# Description:
-#   This Celery task creates an audit trail entry.
-#   It records the action, status, user_id, and any extra information.
-#   The audit data is stored in a MongoDB collection.
+# ==============================
+# Overview:
+# This function creates an audit trail entry in a MongoDB collection.
+# It logs various pieces of information such as action, status, and user_id.
+
+# Detailed Behavior:
+# 1. Initializes an audit data dictionary with the provided parameters.
+# 2. Inserts the audit data into a MongoDB collection named 'audit_trails'.
+
+# Note: This is a Celery task and can be triggered by various events to create audit trails.
+
+# Parameters:
+# - action: The action performed.
+# - status: The status of the action.
+# - user_id: The ID of the user who performed the action.
+# - extra_info: Any additional information to be logged.
 @app.task
 def create_audit_trail(action, status, user_id=None, extra_info=None):
-    # Initialize the audit data dictionary.
+    # Create a dictionary to hold the audit data.
     audit_data = {
         "timestamp": datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z',
         "action": action,
@@ -1560,7 +2237,7 @@ def create_audit_trail(action, status, user_id=None, extra_info=None):
         "extra_info": extra_info
     }
 
-    # Insert the audit data into MongoDB.
+    # Insert the audit data into the MongoDB collection 'audit_trails'.
     mongo_db['audit_trails'].insert_one(audit_data)
 # ------------------------------------------------------------
 
@@ -1568,55 +2245,75 @@ def create_audit_trail(action, status, user_id=None, extra_info=None):
 # =================================
 # Flask Endpoint: get_audit_trails
 # =================================
-# Description:
-#   This Flask endpoint fetches and returns the audit trails.
-#   The endpoint is protected by login_required.
-# Returns:
-#   JSON response containing the audit trails.
+# Overview:
+# This Flask endpoint retrieves audit trail entries from MongoDB.
+
+# Detailed Behavior:
+# 1. Fetches all records from the 'audit_trails' MongoDB collection.
+# 2. Returns the records as a JSON response.
+
+# Note: This endpoint is protected by a `login_required` decorator to ensure only authorized access.
+
+# HTTP Method: GET
 @flask_app.route('/audit_trails', methods=['GET'])
 @login_required
 def get_audit_trails():
-    # Fetch the audit trails from MongoDB.
+    # Fetch all the audit trails from MongoDB.
     audits = list(mongo_db['audit_trails'].find({}))
 
-    # Return the audits as a JSON response.
+    # Return the audit trails as a JSON response.
     return jsonify(audits)
 # ------------------------------------------------------------
 
 
-# ===============================
+# ==============================
 # Function: collect_and_retrain
-# ===============================
-# Description:
-#   This Celery task collects user feedback and re-trains a machine learning model.
-#   It inserts the feedback into a MongoDB collection and calls logic for retraining the ML model.
+# ==============================
+# Overview:
+# This function collects user feedback and re-trains a machine learning model.
+# It logs the feedback into a MongoDB collection and triggers the retraining logic.
+
+# Detailed Behavior:
+# 1. Inserts the feedback data into a MongoDB collection named 'feedback'.
+# 2. Triggers the logic for retraining the machine learning model (not shown in code).
+
+# Note: This is a Celery task and can be triggered by various events to collect feedback and retrain models.
+
+# Parameters:
+# - feedback_data: The feedback data to be logged and used for retraining.
 @app.task
 def collect_and_retrain(feedback_data):
     # Insert the feedback data into MongoDB.
     mongo_db['feedback'].insert_one(feedback_data)
 
-    # Implement the logic for retraining your ML model here.
-# -------------------------------------------------------------------
+    # Trigger the machine learning model retraining logic.
+    # This is a placeholder; include your existing retraining logic here.
+# ------------------------------------------------------------------------
 
 
 # ===================================
 # Flask Endpoint: collect_feedback
 # ===================================
-# Description:
-#   This Flask endpoint collects user feedback.
-#   The endpoint is protected by login_required.
-# Returns:
-#   JSON response confirming the collection of feedback.
+# Overview:
+# This Flask endpoint collects user feedback through a POST request.
+
+# Detailed Behavior:
+# 1. Parses the feedback data from the request body.
+# 2. Dispatches the `collect_and_retrain` task to log the feedback and trigger retraining.
+
+# Note: This endpoint is protected by a `login_required` decorator to ensure only authorized access.
+
+# HTTP Method: POST
 @flask_app.route('/feedback', methods=['POST'])
 @login_required
 def collect_feedback():
-    # Parse the feedback data from the request body.
+    # Parse the feedback data from the JSON body of the POST request.
     feedback_data = request.json
 
-    # Dispatch the collect_and_retrain task asynchronously.
+    # Dispatch the `collect_and_retrain` task for asynchronous feedback collection and model retraining.
     collect_and_retrain.apply_async(args=[feedback_data])
 
-    # Return a success response.
+    # Return a success response to acknowledge the feedback.
     return jsonify({"status": "Feedback successfully collected"})
 # ------------------------------------------------------------------
 
@@ -1624,10 +2321,16 @@ def collect_feedback():
 # =========================
 # Main Execution Block
 # =========================
-# Description:
-#   The main block that runs the Flask application.
-#   It sets the Flask application to run in debug mode.
+# Overview:
+# The main block of the script that initializes and runs the Flask application.
+
+# Detailed Behavior:
+# 1. Sets the Flask application to run in debug mode for development purposes.
+# 2. Starts the Flask application to listen for incoming requests.
+
+# Entry Point: Only runs if the script is the main module.
 if __name__ == '__main__':
-    # Run the Flask application in debug mode.
+    # Run the Flask application with debugging enabled.
+    # Debug mode should be disabled in a production environment.
     flask_app.run(debug=True)
 # ------------------------------------------------------------
