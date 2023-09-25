@@ -16,83 +16,103 @@
 # ---------------------------------------------------------------------------
 # Importing OS to interact with the operating system. This includes reading or writing
 # to the file system, executing system commands, and managing environment variables.
-import os  # For interacting with the OS, including environment variable management
+import os  
+# For interacting with the OS, including environment variable management
 
 # Importing sys for system-specific parameters and functions. This can be used
 # for exiting the script with a status code, flushing the stdout buffer, and more.
-import sys  # For system-level operations, including sys.exit()
+import sys  
+# For system-level operations, including sys.exit()
 
 # Importing logging to capture both debug and error information. This is essential
 # for tracing issues and understanding the flow of the script..
-import logging  # For logging debug and error information to an output file or the console
+import logging  
+# For logging debug and error information to an output file or the console
 
 # Importing random for generating random numbers and making random choices.
 # This is often used in bot logic to simulate human-like behavior.
-import random  # For randomization techniques, often used in bot logic
+import random  
+# For randomization techniques, often used in bot logic
 
 # Importing time to manage time-related tasks. This includes sleep functions that
 # can be used to wait between actions, mimicking human interaction.
-import time  # For managing time, including sleep functions to mimic human interaction
+import time  
+# For managing time, including sleep functions to mimic human interaction
 
 # Importing datetime and timedelta from datetime for date and time manipulation.
 # This is often used for scheduling tasks and generating timestamps.
-from datetime import datetime, timedelta  # For manipulating and formatting date and time objects
+from datetime import datetime, timedelta  
+# For manipulating and formatting date and time objects
 
 # ---------------------------------------------------------------------------
 # 1.2 Third-Party Libraries
 # ---------------------------------------------------------------------------
 # Importing Flask for API construction and request handling. Flask is a micro web framework
 # written in Python.
-from flask import Flask, jsonify, Blueprint, request  # Flask for API construction and request handling
+from flask import Flask, jsonify, Blueprint, request  
+# Flask for API construction and request handling
 
 # Importing Limiter and get_remote_address from flask_limiter for API rate limiting.
 # This is important for protecting the API from abuse.
-from flask_limiter import Limiter, get_remote_address  # For rate limiting the API requests
+from flask_limiter import Limiter, get_remote_address  
+# For rate limiting the API requests
 
 # Importing Api and Resource from flask_restful for creating RESTful APIs.
 # This package makes it easy to build well-documented APIs quickly.
-from flask_restful import Api, Resource  # For building RESTful APIs
+from flask_restful import Api, Resource  
+# For building RESTful APIs
 
 # Importing webdriver from selenium for web scraping. Selenium allows for browser
 # automation which is crucial for navigating websites and gathering data.
-from selenium import webdriver  # For web scraping via browser simulation
+from selenium import webdriver  
+# For web scraping via browser simulation
 
 # Importing By from selenium.webdriver.common for selecting HTML elements.
 # This can be used to find elements by ID, name, XPath, and more.
-from selenium.webdriver.common.by import By  # For element selection in Selenium
+from selenium.webdriver.common.by import By  
+# For element selection in Selenium
 
 # Importing WebDriverWait and expected_conditions from selenium.webdriver.support
 # for managing waits when scraping websites. This ensures that web elements are
 # loaded before interaction.
-from selenium.webdriver.support.ui import WebDriverWait  # For waiting for elements to load in Selenium
-from selenium.webdriver.support import expected_conditions as EC  # For specifying wait conditions in Selenium
+from selenium.webdriver.support.ui import WebDriverWait  
+# For waiting for elements to load in Selenium
+from selenium.webdriver.support import expected_conditions as EC  
+# For specifying wait conditions in Selenium
 
 # Importing BeautifulSoup from bs4 for parsing HTML and extracting required information.
 # BeautifulSoup provides Pythonic idioms for iterating, searching, and modifying the parse tree.
-from bs4 import BeautifulSoup  # For parsing HTML and extracting required info
+from bs4 import BeautifulSoup  
+# For parsing HTML and extracting required info
 
 # Importing scrapy for web crawling. Scrapy is an open-source web-crawling framework
 # written in Python. It's used to extract the data from the website.
-import scrapy  # For web crawling, often used for data extraction
+import scrapy  
+# For web crawling, often used for data extraction
 
 
 # Importing CrawlerProcess from scrapy.crawler to run the Scrapy spiders.
-from scrapy.crawler import CrawlerProcess  # For running Scrapy spiders
+from scrapy.crawler import CrawlerProcess  
+# For running Scrapy spiders
 
 # ---------------------------------------------------------------------------
 # 1.3 Custom Backend Utilities and Services
 # ---------------------------------------------------------------------------
 # Importing BotLogicService for running the bot's core logic.
-from backend.services.bot_logic_service import BotLogicService  # For running the bot's core logic
+from backend.services.bot_logic_service import BotLogicService  
+# For running the bot's core logic
 
 # Importing RateLimiterService for custom rate limiting functionality.
-from backend.services.rate_limiter_service import RateLimiterService  # For custom rate limiting functionality
+from backend.services.rate_limiter_service import RateLimiterService  
+# For custom rate limiting functionality
 
 # Importing DEFAULT_RATE_LIMITS from backend.utils.constants for rate limit constants.
-from backend.utils.constants import DEFAULT_RATE_LIMITS  # For rate limit constants
+from backend.utils.constants import DEFAULT_RATE_LIMITS  
+# For rate limit constants
 
 # Importing load_config from backend.utils.helpers for loading configuration files.
-from backend.utils.helpers import load_config  # For loading configuration files
+from backend.utils.helpers import load_config  
+# For loading configuration files
 
 # ---------------------------------------------------------------------------
 # 1.4 Advanced Analytics Initialization
