@@ -220,10 +220,10 @@ analytics_data = {
 }
 
 # ==============================================================================
-# Section 5: Utility Functions
+# Section 5: Utility Functions For Posting Comments
 # ==============================================================================
 # ---------------------------------------------------------------------------
-# 5.1 Advanced Utility Functions
+# 5.1 Advanced Utility Functions Posting Instagram Comments
 # ---------------------------------------------------------------------------
 # Defining a list of positive comments to use when posting comments on Instagram posts.
 # This list is pre-defined and can be extended as required.
